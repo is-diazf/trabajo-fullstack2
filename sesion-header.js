@@ -31,6 +31,8 @@ function actualizarBotonSesion() {
     } else {
         botonSesion.textContent = "Iniciar sesión";
         botonSesion.href = "login.html";
+        botonSesion.classList.remove("disabled");
+        botonSesion.removeAttribute("aria-disabled");
     }
 }
 

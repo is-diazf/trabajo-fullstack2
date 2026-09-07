@@ -1,9 +1,10 @@
 function ingresar(event){
     event.preventDefault();
+    let tipoUsuario = document.getElementById("tipo-usuario").value;
     let correo = document.getElementById("correo").value;
     let contraseña = document.getElementById("contraseña").value;
 
-    if(correo=== ""||contraseña === ""){
+    if(tipoUsuario === "" || correo === "" || contraseña === ""){
         event.preventDefault();
         alert("Debe completar todos los campos");
         return;
@@ -25,14 +26,14 @@ function ingresar(event){
     }
 
 
-    if(correo === "admin@demo.cl" && contraseña === "Admin123!"){
-        localStorage.setItem("usuarioSesion", JSON.stringify({ correo: correo, rol: "admin" }));
+    if(tipoUsuario === "admin" && correo === "admin@demo.cl" && contraseña === "Admin123!"){
+        localStorage.setItem("usuarioSesion", JSON.stringify({ id: 1, correo: correo, rol: "admin" }));
         window.location.href = "admin.html";
-    }else if(correo === "user@demo.cl" && contraseña === "User123!"){
-        localStorage.setItem("usuarioSesion", JSON.stringify({ correo: correo, rol: "usuario" }));
+    }else if(tipoUsuario === "usuario" && correo === "user@demo.cl" && contraseña === "User123!"){
+        localStorage.setItem("usuarioSesion", JSON.stringify({ id: 2, correo: correo, rol: "usuario" }));
         window.location.href = "index.html";
     }else{
-        alert("Credenciales incorrectas");
+        alert("El tipo de usuario no coincide con las credenciales ingresadas");
     }
 }
 
