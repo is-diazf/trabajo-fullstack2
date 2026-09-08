@@ -17,6 +17,7 @@ function obtenerSesion() {
 
 function actualizarBotonSesion() {
     const botonSesion = document.getElementById("boton-sesion");
+    const botonRegistro = document.getElementById("boton-registro");
     const sesion = obtenerSesion();
 
     if (!botonSesion) {
@@ -28,11 +29,27 @@ function actualizarBotonSesion() {
         botonSesion.href = "usuario.html";
         botonSesion.classList.remove("disabled");
         botonSesion.removeAttribute("aria-disabled");
+
+        if (botonRegistro) {
+            botonRegistro.classList.add("disabled");
+            botonRegistro.textContent = "Registrarse";
+            botonRegistro.removeAttribute("href");
+            botonRegistro.setAttribute("aria-disabled", "true");
+            botonRegistro.setAttribute("tabindex", "-1");
+        }
     } else {
         botonSesion.textContent = "Iniciar sesión";
         botonSesion.href = "login.html";
         botonSesion.classList.remove("disabled");
         botonSesion.removeAttribute("aria-disabled");
+
+        if (botonRegistro) {
+            botonRegistro.classList.remove("disabled");
+            botonRegistro.textContent = "Registrarse";
+            botonRegistro.href = "registro.html";
+            botonRegistro.removeAttribute("aria-disabled");
+            botonRegistro.removeAttribute("tabindex");
+        }
     }
 }
 
