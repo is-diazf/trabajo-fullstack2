@@ -6,7 +6,7 @@ const servicios = [
         precio: 25000,
         descripcion: "Revisión completa de salud para tu mascota. Incluye examen físico y diagnóstico.",
         descripcionAmpliada: "Nuestra consulta general es el servicio más completo para mantener a tu mascota saludable. El veterinario realiza un examen físico detallado, revisa signos vitales, evalúa el peso, temperatura, frecuencia cardíaca y respiratoria. Se incluye diagnóstico preliminar y un plan de tratamiento personalizado. Ideal para chequeos rutinarios o cuando notes algún cambio en el comportamiento de tu mascota.",
-        imagen: "https://via.placeholder.com/400x200/198754/ffffff?text=🐕+Consulta",
+        imagen: "catalogo/Consulta General.jpg",
         duracion: "45 min",
         incluye: "Examen físico, diagnóstico, plan de tratamiento"
     },
@@ -17,7 +17,7 @@ const servicios = [
         precio: 18000,
         descripcion: "Protege a tu mascota con nuestro plan de vacunación completo y seguro.",
         descripcionAmpliada: "Ofrecemos un programa completo de vacunación para perros y gatos. Incluye vacunas obligatorias como la antirrábica, parvovirus, distemper, hepatitis y leptospirosis para perros; y rinotraqueitis, calicivirus y panleucopenia para gatos. Nuestro equipo te asesorará sobre el calendario de vacunación adecuado según la edad y estilo de vida de tu mascota.",
-        imagen: "https://via.placeholder.com/400x200/0d6efd/ffffff?text=💉+Vacunación",
+        imagen: "catalogo/Vacunación.jpg",
         duracion: "20 min",
         incluye: "Vacunas, cartilla de vacunación, asesoría personalizada"
     },
@@ -28,7 +28,7 @@ const servicios = [
         precio: 85000,
         descripcion: "Procedimientos quirúrgicos de baja complejidad con los más altos estándares.",
         descripcionAmpliada: "Realizamos cirugías menores como esterilizaciones, castraciones, extracción de dientes, remoción de tumores benignos y suturas. Contamos con quirófano equipado, monitoreo constante durante el procedimiento y cuidados postoperatorios. La seguridad y bienestar de tu mascota es nuestra prioridad en todo momento.",
-        imagen: "https://via.placeholder.com/400x200/dc3545/ffffff?text=⚕️+Cirugía",
+        imagen: "catalogo/Cirugía Menor.jpg",
         duracion: "60-90 min",
         incluye: "Procedimiento, anestesia, medicamentos postoperatorios"
     },
@@ -39,7 +39,7 @@ const servicios = [
         precio: 12000,
         descripcion: "Elimina parásitos internos y externos de manera efectiva y segura.",
         descripcionAmpliada: "Ofrecemos tratamientos de desparasitación interna y externa para todo tipo de mascotas. Utilizamos productos de última generación que eliminan eficazmente lombrices, garrapatas, pulgas y ácaros. El tratamiento se adapta según el peso, edad y tipo de mascota. Incluye asesoría sobre prevención futura y cuidados posteriores.",
-        imagen: "https://via.placeholder.com/400x200/ffc107/000000?text=🧪+Desparasitación",
+        imagen: "catalogo/Desparasitación.jpg",
         duracion: "15 min",
         incluye: "Medicación desparasitante, asesoría preventiva"
     },
@@ -50,7 +50,7 @@ const servicios = [
         precio: 15000,
         descripcion: "Plan nutricional personalizado para mantener el peso ideal de tu mascota.",
         descripcionAmpliada: "Nuestro programa de control de peso incluye evaluación del estado corporal, medición de peso y composición, y diseño de un plan alimenticio personalizado. Te acompañamos en el proceso con seguimiento periódico y ajustes según los avances. Ideal para mascotas con sobrepeso, obesidad o que necesitan mantener un peso saludable.",
-        imagen: "https://via.placeholder.com/400x200/20c997/ffffff?text=⚖️+Control+Peso",
+        imagen: "catalogo/Control de Peso.jpg",
         duracion: "30 min",
         incluye: "Evaluación, plan nutricional, seguimiento"
     },
@@ -61,7 +61,7 @@ const servicios = [
         precio: 45000,
         descripcion: "Atención de urgencia disponible las 24 horas, los 7 días de la semana.",
         descripcionAmpliada: "Contamos con servicio de emergencia las 24 horas. Atendemos casos graves como intoxicaciones, accidentes, dificultades respiratorias, convulsiones, hemorragias y cualquier situación que ponga en riesgo la vida de tu mascota. Nuestro equipo está preparado para actuar rápidamente y brindar la atención necesaria en momentos críticos.",
-        imagen: "https://via.placeholder.com/400x200/dc3545/ffffff?text=🚨+Emergencia",
+        imagen: "catalogo/Emergencia.jpg",
         duracion: "Variable",
         incluye: "Atención inmediata, monitoreo, tratamiento de urgencia"
     },
@@ -72,7 +72,7 @@ const servicios = [
         precio: 35000,
         descripcion: "Cuidado dental completo para la salud bucal de tu mascota.",
         descripcionAmpliada: "Ofrecemos servicios de odontología veterinaria que incluyen limpieza dental, extracciones, tratamiento de enfermedades periodontales y cuidado preventivo. La salud dental es fundamental para el bienestar general de tu mascota, ya que problemas bucales pueden afectar otros órganos. Realizamos procedimientos bajo anestesia segura y con monitoreo constante.",
-        imagen: "https://via.placeholder.com/400x200/0d6efd/ffffff?text=🦷+Odontología",
+        imagen: "catalogo/Odontología Veterinaria.jpg",
         duracion: "45-60 min",
         incluye: "Limpieza dental, extracciones, tratamiento periodontal"
     },
@@ -83,7 +83,7 @@ const servicios = [
         precio: 28000,
         descripcion: "Diagnóstico preciso con nuestros exámenes de laboratorio completos.",
         descripcionAmpliada: "Contamos con laboratorio propio para realizar exámenes de sangre, orina, heces y análisis bioquímicos. Nuestros equipos modernos permiten obtener resultados rápidos y precisos para un diagnóstico certero. Ofrecemos perfiles completos, hemogramas, bioquímicas sanguíneas, pruebas hormonales y detección de enfermedades infecciosas.",
-        imagen: "https://via.placeholder.com/400x200/6f42c1/ffffff?text=🔬+Laboratorio",
+        imagen: "catalogo/Exámenes de Laboratorio.jpg",
         duracion: "24-48 hrs",
         incluye: "Análisis clínicos, resultados, interpretación"
     }
