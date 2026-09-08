@@ -35,15 +35,24 @@
             </ul>
           </div>
           <div class="ms-auto">
-            <a class="btn btn-light disabled" href="login.html">Iniciar sesión</a>
+            <a id="boton-sesion" class="btn btn-light disabled" href="login.html" aria-disabled="true">Iniciar sesión</a>
           </div>
         </div>
       </nav>
     </header>
 
-    <main class="container mt-5">
+
+    <main class="container mt-3">
         <h1 class="text-center mb-4">Iniciar Sesión</h1>
         <form class="mx-auto" style="max-width: 400px;">
+          <div class="mb-3">
+            <label for="tipo-usuario" class="form-label">Tipo de usuario</label>
+            <select class="form-select" id="tipo-usuario" required>
+              <option value="" selected disabled>Seleccione una opción</option>
+              <option value="usuario">Usuario</option>
+              <option value="admin">Administrador</option>
+            </select>
+          </div>
             <div class="mb-3">
                 <label for="username" class="form-label">Usuario</label>
                 <input type="email" class="form-control" id="correo"  required>
@@ -55,8 +64,9 @@
             <button type="submit" class="btn btn-success w-100">Iniciar Sesión</button>
         </form>
     </main>
-<br>
-<br>
+
+     <img src="mascotas/perroygato.png" alt="Logo de Veterinaria San Marcos" class="d-block mx-auto mt-4" width="140" height="auto">
+
     <footer class="bg-success text-white text-center p-3 mt-auto" style="border: 2px solid #030303;">
       <ul class="nav justify-content-center">
         <li class="nav-item">
@@ -76,6 +86,7 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="sesion-header.js"></script>
     <script src="login.js"></script>
 </body>
 </html>

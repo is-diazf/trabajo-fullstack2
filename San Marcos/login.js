@@ -1,9 +1,10 @@
 function ingresar(event){
     event.preventDefault();
+    let tipoUsuario = document.getElementById("tipo-usuario").value;
     let correo = document.getElementById("correo").value;
     let contraseña = document.getElementById("contraseña").value;
 
-    if(correo=== ""||contraseña === ""){
+    if(tipoUsuario === "" || correo === "" || contraseña === ""){
         event.preventDefault();
         alert("Debe completar todos los campos");
         return;
@@ -17,20 +18,22 @@ function ingresar(event){
 
     }
 
-    let contraseñaSegura = /^(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8,}$/;
+    let contraseñaSegura = /^(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{4,10}$/;
     if (!contraseñaSegura.test(contraseña)) {
         event.preventDefault();
-        alert("La contraseña debe tener al menos 8 caracteres, una mayúscula, un número y un símbolo especial");
+        alert("La contraseña debe tener entre 4 y 10 caracteres, una mayúscula, un número y un símbolo especial");
         return;
     }
 
 
-    if(correo === "admin@demo.cl" && contraseña === "Admin123!"){
+    if(tipoUsuario === "admin" && correo === "admin@demo.cl" && contraseña === "Admin123!"){
+        localStorage.setItem("usuarioSesion", JSON.stringify({ id: 1, correo: correo, rol: "admin" }));
         window.location.href = "admin.html";
-    }else if(correo === "user@demo.cl" && contraseña === "User123!"){
-        window.location.href = "usuario.html";
+    }else if(tipoUsuario === "usuario" && correo === "user@demo.cl" && contraseña === "User123!"){
+        localStorage.setItem("usuarioSesion", JSON.stringify({ id: 2, correo: correo, rol: "usuario" }));
+        window.location.href = "index.html";
     }else{
-        alert("Credenciales incorrectas");
+        alert("El tipo de usuario no coincide con las credenciales ingresadas");
     }
 }
 
