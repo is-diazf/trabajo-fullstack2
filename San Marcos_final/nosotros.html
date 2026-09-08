@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nosotros - Veterinaria San Marcos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <style>
+        .card-veterinaria {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(4px);
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+            transition: transform 0.2s ease;
+        }
+        .card-veterinaria:hover {
+            transform: translateY(-4px);
+        }
+        .icono-mascota {
+            font-size: 2.5rem;
+        }
+        .equipo-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+            transition: all 0.2s ease;
+            text-align: center;
+            height: 100%;
+        }
+        .equipo-card:hover {
+            box-shadow: 0 8px 28px rgba(0, 128, 0, 0.15);
+            transform: scale(1.02);
+        }
+        .equipo-card .avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: #198754;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 0 auto 12px;
+        }
+        .badge-rol {
+            background: #d4edda;
+            color: #0b5e2e;
+            padding: 4px 14px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .seccion-titulo {
+            border-left: 6px solid #198754;
+            padding-left: 16px;
+        }
+        .list-check {
+            list-style: none;
+            padding-left: 0;
+        }
+        .list-check li::before {
+            content: "✓ ";
+            color: #198754;
+            font-weight: bold;
+        }
+      
+        body {
+            background-image: linear-gradient(rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.55)),
+                url('mascotas/kindpng_131510.png');
+            background-size: cover;
+            background-position: center bottom;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }
+
+        footer {
+            border-top: 2px solid #0a3d1f;
+        }
+    </style>
+</head>
+
+<body class="d-flex flex-column min-vh-100">
+
+    <header>
+      <nav class="navbar navbar-expand-lg bg-success" style="border: 2px solid rgb(7, 7, 7);">
+        <div class="container-fluid">
+          <a class="navbar-brand" href="index.html">
+            <img src="mascotas/perroygato.png" alt="Logo" width="30" height="24">
+          </a>
+          <a class="navbar-brand" href="index.html" style="color: white;">Veterinaria San Marcos</a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+              <li class="nav-item">
+                <a class="nav-link active" aria-current="page" href="index.html" style="color: white;">Inicio</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="nosotros.html" style="color: white;">Nosotros</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="contenido.html" style="color: white;">Contenido y Novedades</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="contacto.html" style="color: white;">Contáctanos</a>
+              </li>        
+            </ul>
+          </div>
+          <div class="ms-auto">
+            <a id="boton-registro" class="btn btn-outline-light me-2" href="registro.html">Registrarse</a>
+            <a class="btn btn-light" href="login.html">Iniciar sesión</a>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container my-5 flex-grow-1">
+
+        <div class="text-center mb-5">
+            <h1 class="display-3 fw-bold" style="color: #0d4d2a;">🐾 Sobre Nosotros</h1>
+            <p class="lead text-muted">Conoce quiénes somos, qué hacemos y por qué confiar en nosotros.</p>
+        </div>
+
+        <div class="row g-4 mb-5">
+            <div class="col-md-6">
+                <div class="card-veterinaria p-4 h-100">
+                    <h3 class="seccion-titulo fw-bold" style="color: #0d4d2a;">
+                        <span class="icono-mascota"></span> Nuestra Historia
+                    </h3>
+                    <p class="mt-3" style="font-size: 1.05rem;">
+                        <strong>Veterinaria San Marcos</strong> abrió sus puertas en <strong>2009</strong> en Rancagua,
+                        Región del Libertador Bernardo O'Higgins. Desde entonces, hemos crecido con el compromiso de
+                        brindar atención médica de calidad a las mascotas de nuestra comunidad.
+                    </p>
+                    <ul class="list-check mt-3">
+                        <li><strong>+15 años</strong> de experiencia</li>
+                        <li>Más de <strong>25 pacientes</strong> atendidos al día</li>
+                        <li>Especialistas en perros, gatos, conejos y aves</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card-veterinaria p-4 h-100">
+                    <h3 class="seccion-titulo fw-bold" style="color: #0d4d2a;">
+                        <span class="icono-mascota"></span> Nuestro Propósito
+                    </h3>
+                    <p class="mt-3" style="font-size: 1.05rem;">
+                        Creemos que cada mascota merece una vida saludable y feliz. Por eso, nos esforzamos en ofrecer
+                        un trato <strong>cálido, cercano y profesional</strong>, combinando la medicina veterinaria con
+                        el cariño que tus animales merecen.
+                    </p>
+                    <div class="mt-3">
+                        <span class="badge bg-success me-1">Amor por los animales</span>
+                        <span class="badge bg-success me-1">Excelencia médica</span>
+                        <span class="badge bg-success">Confianza</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-5">
+
+            <div class="col-lg-6">
+                <div class="card-veterinaria p-4 h-100">
+                    <h3 class="seccion-titulo fw-bold" style="color: #0d4d2a;">
+                        <span class="icono-mascota"></span> Servicios que ofrecemos
+                    </h3>
+                    <div class="row g-3 mt-2">
+                        <div class="col-6">
+                            <div class="p-2 bg-light rounded-3 text-center">
+                                <span style="font-size: 1.8rem;"></span>
+                                <p class="fw-semibold mb-0">Consulta general</p>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-2 bg-light rounded-3 text-center">
+                                <span style="font-size: 1.8rem;"></span>
+                                <p class="fw-semibold mb-0">Vacunación</p>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-2 bg-light rounded-3 text-center">
+                                <span style="font-size: 1.8rem;"></span>
+                                <p class="fw-semibold mb-0">Cirugía menor</p>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-2 bg-light rounded-3 text-center">
+                                <span style="font-size: 1.8rem;"></span>
+                                <p class="fw-semibold mb-0">Desparasitación</p>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="p-2 bg-light rounded-3 text-center">
+                                <span style="font-size: 1.8rem;"></span>
+                                <p class="fw-semibold mb-0">Control de peso</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="card-veterinaria p-4 h-100">
+                    <h3 class="seccion-titulo fw-bold" style="color: #0d4d2a;">
+                        <span class="icono-mascota"></span> Nuestro Equipo
+                    </h3>
+                    <ul class="list-unstyled mt-3">
+                        <li class="d-flex align-items-center mb-2">
+                            <span class="badge bg-success rounded-pill me-2">3</span>
+                            <strong>Médicos Veterinarios</strong>
+                        </li>
+                        <li class="d-flex align-items-center mb-2">
+                            <span class="badge bg-success rounded-pill me-2">1</span>
+                            <strong>Técnico Veterinario</strong>
+                        </li>
+                        <li class="d-flex align-items-center mb-2">
+                            <span class="badge bg-success rounded-pill me-2">1</span>
+                            <strong>Recepcionista Administrativa</strong>
+                        </li>
+                    </ul>
+                    <p class="text-muted mt-2" style="font-size: 0.95rem;">
+                        <em>“Somos un equipo apasionado, siempre en formación para dar lo mejor a tus mascotas.”</em>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <section class="my-5">
+            <div class="text-center mb-4">
+                <h2 class="display-5 fw-bold" style="color: #0d4d2a;">Equipo Desarrollador</h2>
+                <p class="text-muted">Detrás de este sitio web hay un equipo comprometido con la tecnología y el bienestar animal.</p>
+            </div>
+
+            <div class="row g-4 justify-content-center">
+
+                <div class="col-md-4 col-sm-6">
+                    <div class="equipo-card">
+                        <div class="avatar">JD</div>
+                        <h5 class="fw-bold mt-2">Israel Diaz</h5>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-md-4 col-sm-6">
+                    <div class="equipo-card">
+                        <div class="avatar">MR</div>
+                        <h5 class="fw-bold mt-2"> Felipe Martnez</h5>
+                    </div>
+                </div>
+
+                <div class="col-md-4 col-sm-6">
+                    <div class="equipo-card">
+                        <div class="avatar">CP</div>
+                        <h5 class="fw-bold mt-2">Maximiliano Ramos</h5>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-success text-white text-center p-3" style="border-top: 2px solid #0a3d1f;">
+        <ul class="nav justify-content-center">
+            <li class="nav-item">
+                <a href="index.html" class="nav-link px-2 text-white-50">Inicio</a>
+            </li>
+            <li class="nav-item">
+                <a href="nosotros.html" class="nav-link px-2 text-white">Nosotros</a>
+            </li>
+            <li class="nav-item">
+                <a href="contenido.html" class="nav-link px-2 text-white-50">Contenido y Novedades</a>
+            </li>
+            <li class="nav-item">
+                <a href="contacto.html" class="nav-link px-2 text-white-50">Contacto</a>
+            </li>
+        </ul>
+        <p class="text-center text-white-50 mt-2 mb-0 small">
+            &copy; 2026 Veterinaria San Marcos · Todos los derechos reservados.
+        </p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link href="contacto.css" rel="stylesheet">
+</head>
+<body>
+
+        <header>
+      <nav class="navbar navbar-expand-lg bg-success" style="border: 2px solid rgb(7, 7, 7);">
+        <div class="container-fluid">
+          <a class="navbar-brand" href="index.html">
+            <img src="mascotas/perroygato.png" alt="Logo" width="30" height="24">
+          </a>
+          <a class="navbar-brand" href="index.html" style="color: white;">Veterinaria San Marcos</a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+              <li class="nav-item">
+                <a class="nav-link active" aria-current="page" href="index.html" style="color: white;">Inicio</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="nosotros.html" style="color: white;">Nosotros</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="contenido.html" style="color: white;">Contenido y Novedades</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="contacto.html" style="color: white;">Contáctanos</a>
+              </li>        
+            </ul>
+          </div>
+          <div class="ms-auto">
+            <a id="boton-registro" class="btn btn-outline-light me-2" href="registro.html">Registrarse</a>
+            <a class="btn btn-light" href="login.html">Iniciar sesión</a>
+          </div>
+        </div>
+      </nav>
+    </header>
+    
+    <section class="mt-5">
+    <div class="text-center mb-4">
+        <h2 class="display-5 fw-bold" style="color: #0d4d2a;">¿Tienes una consulta?</h2>
+        <p class="text-muted">Déjanos tu mensaje y te responderemos a la brevedad.</p>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <form id="formularioConsulta" class="formulario-consulta" novalidate>
+
+                <div id="alertaExito" class="alert alert-success alerta-exito" role="alert">
+                    ¡Mensaje enviado con éxito! Te contactaremos pronto.
+                </div>
+
+                <div class="mb-3">
+                    <label for="nombre" class="form-label fw-semibold">Nombre completo *</label>
+                    <input type="text" class="form-control" id="nombre" placeholder="Ej: María González" required />
+                    <div id="error-nombre" class="mensaje-error">Por favor, ingresa tu nombre completo.</div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="correo" class="form-label fw-semibold">Correo electrónico *</label>
+                    <input type="email" class="form-control" id="correo" placeholder="Ej: maria@email.com" required />
+                    <div id="error-correo" class="mensaje-error">Ingresa un correo electrónico válido (ej: nombre@dominio.com).</div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="mensaje" class="form-label fw-semibold">Mensaje o consulta *</label>
+                    <textarea class="form-control" id="mensaje" rows="4" placeholder="Escribe tu consulta aquí..." required></textarea>
+                    <div id="error-mensaje" class="mensaje-error">El mensaje debe tener al menos 10 caracteres.</div>
+                </div>
+
+                <div class="text-center">
+                    <button type="submit" class="btn btn-success"> Enviar mensaje</button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</section>
+
+    <footer class="bg-success text-white text-center p-3 mt-auto" style="border: 2px solid #030303;">
+      <ul class="nav justify-content-center">
+        <li class="nav-item">
+          <a href="index.html" class="nav-link px-2 text-white">Inicio</a>
+        </li>
+        <li class="nav-item">
+          <a href="nosotros.html" class="nav-link px-2 text-white-50">Nosotros</a>
+        </li>
+        <li class="nav-item">
+          <a href="contenido.html" class="nav-link px-2 text-white-50">Contenido y Novedades</a>
+        </li>
+        <li class="nav-item">
+          <a href="contacto.html" class="nav-link px-2 text-white-50">Contacto</a>
+        </li>
+      </ul>
+      <p class="text-center text-white-50 mt-2 mb-0">&copy; 2026 Veterinaria San Marcos. Todos los derechos reservados.</p>
+    </footer>
+    
+</body>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="contacto.js"></script>
+</html>

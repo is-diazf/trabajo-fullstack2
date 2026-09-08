@@ -1,0 +1,127 @@
+        body {
+            background: #f8f9fa;
+        }
+
+        .card-publicacion {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+            border: none;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .card-publicacion:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 32px rgba(0, 128, 0, 0.15);
+        }
+
+        .card-publicacion img {
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .detalle-publicacion {
+            display: none;
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            margin-top: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border-left: 6px solid #198754;
+        }
+
+        .detalle-publicacion.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .btn-volver {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 8px 24px;
+            border-radius: 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-volver:hover {
+            background: #5a6268;
+            transform: scale(1.05);
+        }
+
+        .formulario-consulta {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+        }
+
+        .formulario-consulta .form-control {
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+            transition: all 0.3s ease;
+        }
+
+        .formulario-consulta .form-control:focus {
+            border-color: #198754;
+            box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.2);
+        }
+
+        .btn-enviar {
+            background: #198754;
+            color: white;
+            border: none;
+            padding: 12px 40px;
+            border-radius: 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-enviar:hover {
+            background: #157347;
+            transform: scale(1.05);
+        }
+
+        .mensaje-error {
+            color: #dc3545;
+            font-size: 0.85rem;
+            margin-top: 4px;
+            display: none;
+        }
+
+        .mensaje-error.visible {
+            display: block;
+        }
+
+        .input-error {
+            border-color: #dc3545 !important;
+        }
+
+        .alerta-exito {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .alerta-exito.visible {
+            display: block;
+        }
+
+        .detalle-imagen {
+            width: 100%;
+            max-height: 300px;
+            object-fit: cover;
+            border-radius: 12px;
+        }
