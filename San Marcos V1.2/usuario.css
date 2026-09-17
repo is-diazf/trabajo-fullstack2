@@ -1,0 +1,226 @@
+/* ===== TARJETAS DEL DASHBOARD DE USUARIO ===== */
+.card-dashboard {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    height: 100%;
+    border-left: 5px solid #198754;
+}
+
+.card-dashboard:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 28px rgba(25, 135, 84, 0.18);
+}
+
+.card-dashboard .icono {
+    font-size: 2.2rem;
+    color: #198754;
+    margin-bottom: 10px;
+}
+
+.card-dashboard h5 {
+    color: #0d4d2a;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.card-dashboard p {
+    color: #6c757d;
+    margin-bottom: 0;
+    font-size: 0.95rem;
+}
+
+/* ===== BIENVENIDA ===== */
+.bienvenida {
+    background: linear-gradient(135deg, #198754 0%, #0d4d2a 100%);
+    color: white;
+    border-radius: 16px;
+    padding: 30px;
+    margin-bottom: 30px;
+}
+
+.bienvenida h1 {
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.bienvenida .avatar-grande {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    font-weight: bold;
+    border: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+/* ===== LISTA DE INTERÉS ===== */
+.item-interes {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    border-radius: 10px;
+    background: #f8f9fa;
+    margin-bottom: 10px;
+    transition: background 0.2s ease;
+}
+
+.item-interes:hover {
+    background: #e9ecef;
+}
+
+.item-interes .info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.item-interes img {
+    width: 50px;
+    height: 50px;
+    border-radius: 10px;
+    object-fit: cover;
+}
+
+.item-interes strong {
+    color: #0d4d2a;
+    display: block;
+}
+
+.item-interes .precio {
+    color: #198754;
+    font-weight: 700;
+}
+
+.btn-quitar {
+    background: transparent;
+    border: none;
+    color: #dc3545;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.btn-quitar:hover {
+    transform: scale(1.2);
+}
+
+.lista-vacia {
+    text-align: center;
+    padding: 30px 10px;
+    color: #6c757d;
+}
+
+/* ===== NOVEDADES ===== */
+.card-novedad {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.06);
+    transition: transform 0.3s ease;
+    height: 100%;
+}
+
+.card-novedad:hover {
+    transform: translateY(-4px);
+}
+
+.card-novedad img {
+    width: 100%;
+    height: 140px;
+    object-fit: cover;
+}
+
+.card-novedad .card-body {
+    padding: 16px;
+}
+
+.card-novedad h6 {
+    color: #0d4d2a;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.card-novedad p {
+    color: #6c757d;
+    font-size: 0.85rem;
+    margin-bottom: 8px;
+}
+
+/* ===== NAVEGACIÓN POR PESTAÑAS ===== */
+.nav-perfil .nav-link {
+    color: #0d4d2a;
+    font-weight: 600;
+    border-radius: 30px;
+    padding: 10px 22px;
+    margin-right: 8px;
+    transition: all 0.3s ease;
+}
+
+.nav-perfil .nav-link:hover {
+    background: #d4edda;
+}
+
+.nav-perfil .nav-link.active {
+    background: #198754;
+    color: white;
+}
+
+.seccion-perfil {
+    display: none;
+}
+
+.seccion-perfil.active {
+    display: block;
+    animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== SECCIÓN DE ACTIVIDAD ===== */
+.actividad-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.actividad-item:last-child {
+    border-bottom: none;
+}
+
+.actividad-item .icono-actividad {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: #d4edda;
+    color: #0d4d2a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.actividad-item .texto-actividad {
+    font-size: 0.9rem;
+}
+
+.actividad-item .texto-actividad strong {
+    color: #0d4d2a;
+}
+
+.actividad-item .fecha {
+    color: #adb5bd;
+    font-size: 0.8rem;
+}

@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración - Veterinaria San Marcos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- ===== SIDEBAR ===== -->
+            <div class="col-lg-2 col-md-3 p-0">
+                <div class="admin-sidebar">
+                    <div class="brand">
+                        <i class="bi bi-heart-pulse"></i> Vet San Marcos
+                    </div>
+                    <nav class="nav flex-column">
+                        <a class="nav-link active" href="#" onclick="mostrarSeccion('dashboard'); return false;">
+                            <i class="bi bi-speedometer2"></i> Dashboard
+                        </a>
+                        <a class="nav-link" href="#" onclick="mostrarSeccion('servicios'); return false;">
+                            <i class="bi bi-box-seam"></i> Servicios
+                        </a>
+                        <a class="nav-link" href="#" onclick="mostrarSeccion('usuarios'); return false;">
+                            <i class="bi bi-people"></i> Usuarios
+                        </a>
+                        <a class="nav-link" href="index.html">
+                            <i class="bi bi-globe"></i> Ver sitio
+                        </a>
+                        <a class="nav-link cerrar-sesion" href="#" onclick="cerrarSesionAdmin(); return false;">
+                            <i class="bi bi-box-arrow-right"></i> Cerrar sesión
+                        </a>
+                    </nav>
+                    <div class="user-info mt-4">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="avatar">A</div>
+                            <div>
+                                <div class="user-name">Administrador</div>
+                                <div class="user-email">admin@vet.com</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== CONTENIDO ===== -->
+            <div class="col-lg-10 col-md-9 p-0">
+                <div class="admin-content active" id="seccion-dashboard">
+                    <div class="admin-header d-flex justify-content-between align-items-center">
+                        <h2><i class="bi bi-speedometer2 me-2"></i>Dashboard</h2>
+                        <span class="badge-admin">Panel de administración</span>
+                    </div>
+                    <div class="row g-4">
+                        <div class="col-md-4">
+                            <div class="card-admin text-center">
+                                <div class="icon-circle mx-auto"><i class="bi bi-box-seam"></i></div>
+                                <h5>Total Servicios</h5>
+                                <div class="stats-number" id="total-servicios">0</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card-admin text-center">
+                                <div class="icon-circle mx-auto"><i class="bi bi-people"></i></div>
+                                <h5>Total Usuarios</h5>
+                                <div class="stats-number" id="total-usuarios">0</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card-admin text-center">
+                                <div class="icon-circle mx-auto"><i class="bi bi-shield-lock"></i></div>
+                                <h5>Administradores</h5>
+                                <div class="stats-number" id="total-administradores">0</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <div class="card-admin">
+                            <h5><i class="bi bi-info-circle me-2"></i>Bienvenido al panel</h5>
+                            <p class="mb-0">Desde aquí puedes gestionar los servicios y usuarios de la Veterinaria San Marcos. Usa el menú lateral para navegar entre las secciones.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===== SECCIÓN SERVICIOS ===== -->
+                <div class="admin-content" id="seccion-servicios">
+                    <div class="admin-header d-flex justify-content-between align-items-center">
+                        <h2><i class="bi bi-box-seam me-2"></i>Gestión de Servicios</h2>
+                        <button class="btn-admin" onclick="abrirModalServicio()">
+                            <i class="bi bi-plus-circle me-1"></i> Nuevo Servicio
+                        </button>
+                    </div>
+                    <div id="alert-servicio" class="alert" style="display:none;"></div>
+                    <div class="table-responsive">
+                        <table class="table admin-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Imagen</th>
+                                    <th>Nombre</th>
+                                    <th>Categoría</th>
+                                    <th>Precio</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-servicios"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- ===== SECCIÓN USUARIOS ===== -->
+                <div class="admin-content" id="seccion-usuarios">
+                    <div class="admin-header d-flex justify-content-between align-items-center">
+                        <h2><i class="bi bi-people me-2"></i>Gestión de Usuarios</h2>
+                        <button class="btn-admin" onclick="abrirModalUsuario()">
+                            <i class="bi bi-person-plus me-1"></i> Nuevo Usuario
+                        </button>
+                    </div>
+                    <div id="alert-usuario" class="alert" style="display:none;"></div>
+                    <div class="table-responsive">
+                        <table class="table admin-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nombre</th>
+                                    <th>Email</th>
+                                    <th>Rol</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-usuarios"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MODAL SERVICIO ===== -->
+    <div class="modal fade" id="modalServicio" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalServicioTitle">Nuevo Servicio</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formServicio">
+                        <input type="hidden" id="servicioId">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="s_nombre" class="form-label">Nombre *</label>
+                                <input type="text" class="form-control form-control-admin" id="s_nombre" placeholder="Ej: Consulta General">
+                                <div class="text-danger small mt-1" id="s_error_nombre" style="display:none;">El nombre es obligatorio.</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="s_categoria" class="form-label">Categoría *</label>
+                                <select class="form-control form-control-admin" id="s_categoria">
+                                    <option value="">Seleccione...</option>
+                                    <option value="Atención médica">Atención médica</option>
+                                    <option value="Prevención">Prevención</option>
+                                    <option value="Procedimientos">Procedimientos</option>
+                                    <option value="Nutrición">Nutrición</option>
+                                    <option value="Urgencias">Urgencias</option>
+                                </select>
+                                <div class="text-danger small mt-1" id="s_error_categoria" style="display:none;">Seleccione una categoría.</div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="s_precio" class="form-label">Precio *</label>
+                                <input type="number" class="form-control form-control-admin" id="s_precio" placeholder="Ej: 25000">
+                                <div class="text-danger small mt-1" id="s_error_precio" style="display:none;">Ingrese un precio válido mayor a 0.</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="s_duracion" class="form-label">Duración</label>
+                                <input type="text" class="form-control form-control-admin" id="s_duracion" placeholder="Ej: 45 min">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="s_descripcion" class="form-label">Descripción *</label>
+                            <textarea class="form-control form-control-admin" id="s_descripcion" rows="2" placeholder="Descripción breve del servicio"></textarea>
+                            <div class="text-danger small mt-1" id="s_error_descripcion" style="display:none;">La descripción debe tener al menos 5 caracteres.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="s_descripcionAmpliada" class="form-label">Descripción ampliada</label>
+                            <textarea class="form-control form-control-admin" id="s_descripcionAmpliada" rows="3" placeholder="Descripción detallada del servicio"></textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="s_imagen" class="form-label">URL de imagen</label>
+                                <input type="text" class="form-control form-control-admin" id="s_imagen" placeholder="https://...">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="s_incluye" class="form-label">Incluye</label>
+                                <input type="text" class="form-control form-control-admin" id="s_incluye" placeholder="Ej: Examen físico, diagnóstico">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-admin-outline" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn-admin" onclick="guardarServicio()">
+                        <i class="bi bi-save me-1"></i> Guardar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MODAL USUARIO ===== -->
+    <div class="modal fade" id="modalUsuario" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalUsuarioTitle">Nuevo Usuario</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formUsuario">
+                        <input type="hidden" id="usuarioId">
+                        <div class="mb-3">
+                            <label for="u_nombre" class="form-label">Nombre *</label>
+                            <input type="text" class="form-control form-control-admin" id="u_nombre" placeholder="Nombre completo">
+                            <div class="text-danger small mt-1" id="u_error_nombre" style="display:none;">El nombre es obligatorio.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="u_email" class="form-label">Email *</label>
+                            <input type="email" class="form-control form-control-admin" id="u_email" placeholder="correo@ejemplo.com">
+                            <div class="text-danger small mt-1" id="u_error_email" style="display:none;">Ingrese un email válido.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="u_password" class="form-label">Contraseña *</label>
+                            <input type="password" class="form-control form-control-admin" id="u_password" placeholder="Mínimo 6 caracteres">
+                            <div class="text-danger small mt-1" id="u_error_password" style="display:none;">La contraseña debe tener al menos 6 caracteres.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="u_rol" class="form-label">Rol *</label>
+                            <select class="form-control form-control-admin" id="u_rol">
+                                <option value="">Seleccione...</option>
+                                <option value="admin">Administrador</option>
+                                <option value="veterinario">Veterinario</option>
+                                <option value="usuario">Usuario</option>
+                            </select>
+                            <div class="text-danger small mt-1" id="u_error_rol" style="display:none;">Seleccione un rol.</div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-admin-outline" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn-admin" onclick="guardarUsuario()">
+                        <i class="bi bi-save me-1"></i> Guardar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MODAL CONFIRMAR ===== -->
+    <div class="modal fade" id="modalConfirmar" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-exclamation-triangle me-2"></i>Confirmar eliminación</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <p>¿Estás seguro de que deseas eliminar este elemento?</p>
+                    <p class="text-muted small mb-0" id="confirmar-mensaje"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-admin-outline" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn-admin" id="confirmar-eliminar">Eliminar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="admin.js"></script>
+</body>
+</html>

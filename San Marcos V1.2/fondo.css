@@ -1,0 +1,10 @@
+/* ===== FONDO COMPARTIDO - Veterinaria San Marcos ===== */
+body.fondo-veterinaria {
+    background-image: linear-gradient(rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.55)),
+        url('mascotas/kindpng_131510.png');
+    background-size: cover;
+    background-position: center bottom;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    min-height: 100vh;
+}
