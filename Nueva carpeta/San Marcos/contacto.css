@@ -1,0 +1,28 @@
+body {
+	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
+}
+
+.mensaje-error {
+color: #dc3545;
+font-size: 0.85rem;
+margin-top: 4px;
+display: none;
+}
+
+.mensaje-error.visible {
+display: block;
+}
+
+.input-error {
+border-color: #dc3545 !important;
+}
+
+.alerta-exito {
+display: none;
+}
+
+.alerta-exito.visible {
+display: block;
+}
