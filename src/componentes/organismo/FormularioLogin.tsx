@@ -1,6 +1,6 @@
 //se agrega la validacion, no es necesaria pero se hace
 import { useState } from "react";
-import CampoFormulario from "./CampoFormulario";
+import CampoFormulario from "../moleculas/CampoFormulario";
 
 function FormularioLogin() {
     const [correo, setCorreo] = useState("");
