@@ -3,14 +3,15 @@ type Props = {
     nombre: string;
     valor: string; //Valor actual del campo
     alCambiar: (valor: string) => void; //Funcion para actualizar el valor
+    placeholder?: string;
 };
-function Input({ tipo, nombre, valor, alCambiar}: Props){
+function Input({ tipo, nombre, valor, alCambiar, placeholder }: Props){
     return(
         <input
             type= {tipo}
             name={nombre}
             className="form-control"
-
+            placeholder={placeholder}
 
             // Muestra el valor guardado
             value={valor}

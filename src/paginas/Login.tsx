@@ -1,4 +1,4 @@
-import FormularioLogin from "../moleculas/FormularioLogin";
+import FormularioLogin from "../componentes/moleculas/FormularioLogin";
 
 
 function Login () {
