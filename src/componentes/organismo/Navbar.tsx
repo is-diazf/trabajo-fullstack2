@@ -1,45 +1,37 @@
-import { Link } from "react-router-dom";
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
+
 function Navbar() {
-    
+    const [menuAbierto, setMenuAbierto] = useState(false);
+    const cerrarMenu = () => setMenuAbierto(false);
+
     return (
-        <nav className="navbar navbar-expand bg-success">
-            <div className="container">
-                <span className="navbar-brand text-white">
-                    Veterinaria San Marcos
-                </span>
-                <div className="navbar-nav me-auto">
-                    <Link className="nav-link text-white" to="/">
-                        Inicio
-                    </Link>
-
-                    <Link className="nav-link text-white" to="/novedades">
-                        Novedades
-                    </Link>
-
-                    <Link className="nav-link text-white" to="/servicios">
-                        Servicios
-                    </Link>
-                    
-                    <Link className="nav-link text-white" to="/contacto">
-                        Contacto
-                    </Link>
-
-                    <Link className="nav-link text-white" to="/info">
-                        Quienes somos
-                    </Link>
+        <nav className="site-navbar">
+            <div className="site-navbar-inner">
+                <Link className="site-brand" to="/" onClick={cerrarMenu}>Veterinaria <span>San Marcos</span></Link>
+                <button
+                    className="nav-toggle"
+                    type="button"
+                    aria-label={menuAbierto ? 'Cerrar menú' : 'Abrir menú'}
+                    aria-expanded={menuAbierto}
+                    aria-controls="navegacion-principal"
+                    onClick={() => setMenuAbierto(!menuAbierto)}
+                >
+                    <span />
+                    <span />
+                    <span />
+                </button>
+                <div id="navegacion-principal" className={`site-nav-content${menuAbierto ? ' is-open' : ''}`}>
+                    <div className="site-nav-links">
+                        <Link className="site-nav-link" to="/" onClick={cerrarMenu}>Inicio</Link>
+                        <Link className="site-nav-link" to="/novedades" onClick={cerrarMenu}>Novedades</Link>
+                        <Link className="site-nav-link" to="/servicios" onClick={cerrarMenu}>Servicios</Link>
+                        <Link className="site-nav-link" to="/info" onClick={cerrarMenu}>Quiénes somos</Link>
+                        <Link className="site-nav-link" to="/contacto" onClick={cerrarMenu}>Contacto</Link>
+                    </div>
+                    <Link to="/login" className="btn btn-sm site-login" onClick={cerrarMenu}>Iniciar sesión</Link>
                 </div>
-                <div className="navbar-nav">
-                    <Link
-                      to="/login"
-                      className="btn btn-sm"
-                      style={{ backgroundColor: "#d34209", borderColor: "#d34209", color: "white", boxShadow: "0 0 10px rgba(0,0,0,0.3)" }} >
-                        Iniciar sesión
-                    </Link>
-
-                </div>
-
             </div>
-
         </nav>
     )
 }

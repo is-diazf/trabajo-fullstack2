@@ -1,20 +1,31 @@
-function Info () {
-    return(
-        <div className="container mt-4">
-            <h1>quienes somos</h1>
-            <p>
-                Veterinaria San Marcos es una empresa dedicada a la salud y bienestar de las mascotas. 
-                Contamos con un equipo de profesionales altamente capacitados y comprometidos con el cuidado de los animales.
-            </p>
-            <p>
-                Nuestra misión es brindar servicios veterinarios de calidad, ofreciendo atención personalizada y soluciones efectivas para cada mascota.
-            </p>
-            <p>
-                Nos enorgullece ser parte de la comunidad y contribuir al bienestar de las mascotas y sus dueños.
-            </p>
-        </div>
+import { Link } from 'react-router-dom';
 
-    )
+function Info() {
+    return (
+        <main className="about-page">
+            <section className="about-heading">
+                <p className="eyebrow">Quiénes somos</p>
+                <h1>Cuidado veterinario con trato cercano.</h1>
+                <p>
+                    En Veterinaria San Marcos trabajamos para que cada mascota reciba una atención respetuosa, clara y pensada para su bienestar.
+                </p>
+            </section>
+
+            <section className="about-details">
+                <div className="about-image" role="img" aria-label="Animales de compañía" />
+                <div className="about-copy">
+                    <h2>Una relación de confianza, visita a visita.</h2>
+                    <p>
+                        Creemos que cuidar bien también significa escuchar. Por eso acompañamos a las familias con orientación comprensible y recomendaciones adecuadas a las necesidades de cada paciente.
+                    </p>
+                    <p>
+                        Nuestro compromiso es contribuir a una vida más saludable para las mascotas y a una experiencia tranquila para quienes las cuidan.
+                    </p>
+                    <Link className="btn btn-success" to="/contacto">Conversemos</Link>
+                </div>
+            </section>
+        </main>
+    );
 }
 
-export default Info
+export default Info;
