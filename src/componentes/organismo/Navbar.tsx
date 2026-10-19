@@ -29,7 +29,15 @@ function Navbar() {
                         <Link className="site-nav-link" to="/info" onClick={cerrarMenu}>Quiénes somos</Link>
                         <Link className="site-nav-link" to="/contacto" onClick={cerrarMenu}>Contacto</Link>
                     </div>
-                    <Link to="/login" className="btn btn-sm site-login" onClick={cerrarMenu}>Iniciar sesión</Link>
+
+                    <Link 
+                        to="/login" 
+                        className="btn btn-sm btn-light text-success fw-bold ms-3 px-3 rounded-pill site-login" 
+                        onClick={cerrarMenu}
+                    >
+                        Iniciar sesión
+                    </Link>
+                    
                 </div>
             </div>
         </nav>

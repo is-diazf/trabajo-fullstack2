@@ -13,22 +13,8 @@ function App() {
 
   return (
     <>
-{/* Imagen central de fondo visible en todo el proyecto */}
-        <div 
-          className="position-absolute w-75 h-100 top-50 start-50 translate-middle" 
-          style={{
-            backgroundImage: 'url("/img/animalesFondo.png")',
-            backgroundRepeat: 'no-repeat',
-            backgroundPosition: 'center',
-            backgroundSize: 'contain',
-            opacity: 0.25, // Opacidad baja para no interferir con el texto de las páginas
-            zIndex: 0,
-            pointerEvents: 'none'
-          }}
-        />
-
       <Navbar />
-
+ 
       <Routes>
         
 
