@@ -1,6 +1,6 @@
 // CardServicio.tsx
 import { Link } from 'react-router-dom';
-import Boton from '../atomos/boton';
+import Boton from '../atoms/boton';
 
 interface CardServicioProps {
   id: number;

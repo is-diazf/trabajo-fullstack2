@@ -1,15 +1,17 @@
 import { Route, Routes } from 'react-router-dom';
 import './App.css';
-import Navbar from './componentes/organismo/Navbar';
-import Inicio from './paginas/Inicio';
-import Servicios from './paginas/Servicios';
-import Contacto from './paginas/Contacto';
-import Info from './paginas/Info';
-import Login from './paginas/Login';
-import Novedades from './paginas/Novedades';
-import Footer from './componentes/organismo/Footer';
-import ServicioDetalle from './paginas/ServiciosDetalle';
-import AdminServicios from './paginas/AdminServicios';
+import Navbar from './componentes/organism/Navbar';
+import Inicio from './pages/Inicio';
+import Servicios from './pages/Servicios';
+import Contacto from './pages/Contacto';
+import Info from './pages/Info';
+import Login from './pages/Login';
+import Novedades from './pages/Novedades';
+import Footer from './componentes/organism/Footer';
+import ServicioDetalle from './pages/ServiciosDetalle';
+import AdminServicios from './pages/AdminServicios';
+import Registro from './pages/Registro';
+import Usuario from './pages/Usuario';
 
 function App() {
 
@@ -36,6 +38,8 @@ function App() {
         <Route path="/login"
          element={<Login />} />
 
+        <Route path="/registro" element={<Registro />} />
+        <Route path="/usuario" element={<Usuario />} />
 
       </Routes>
       

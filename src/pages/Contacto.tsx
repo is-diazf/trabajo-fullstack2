@@ -1,4 +1,4 @@
-import FormularioContacto from '../componentes/organismo/FormularioContacto';
+import FormularioContacto from '../componentes/organism/FormularioContacto';
 
 function Contacto() {
   return (

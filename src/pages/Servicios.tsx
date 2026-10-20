@@ -1,6 +1,6 @@
 // src/paginas/Servicios.tsx
 import { useState } from "react";
-import CardServicio from "../componentes/moleculas/CardServicio";
+import CardServicio from "../componentes/molecules/CardServicio";
 import { useServicios } from "../context/ServiciosContexto"; // Ojo aquí: Contexto con O
 
 function Servicios() {

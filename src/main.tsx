@@ -6,12 +6,15 @@ import { BrowserRouter } from 'react-router-dom'
 import 'bootstrap/dist/css/bootstrap.min.css'
 // 1. IMPORTAMOS EL PROVEEDOR
 import { ServiciosProvider } from './context/ServiciosContexto.tsx' 
+import { SesionProvider } from './context/SesionContexto.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
       <ServiciosProvider>
-        <App />
+        <SesionProvider>
+          <App />
+        </SesionProvider>
       </ServiciosProvider>
     </BrowserRouter>
   </StrictMode>,

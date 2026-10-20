@@ -1,9 +1,18 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useSesion } from '../../context/SesionContexto';
 
 function Navbar() {
     const [menuAbierto, setMenuAbierto] = useState(false);
     const cerrarMenu = () => setMenuAbierto(false);
+    const { usuario, cerrarSesion } = useSesion();
+    const navegar = useNavigate();
+
+    const manejarCierreSesion = () => {
+        cerrarSesion();
+        cerrarMenu();
+        navegar('/');
+    };
 
     return (
         <nav className="site-navbar">
@@ -30,13 +39,20 @@ function Navbar() {
                         <Link className="site-nav-link" to="/contacto" onClick={cerrarMenu}>Contacto</Link>
                     </div>
 
-                    <Link 
-                        to="/login" 
-                        className="btn btn-sm btn-light text-success fw-bold ms-3 px-3 rounded-pill site-login" 
-                        onClick={cerrarMenu}
-                    >
-                        Iniciar sesión
-                    </Link>
+                    {usuario ? (
+                        <>
+                            <Link to="/usuario" className="btn btn-sm btn-light text-success fw-bold ms-3 px-3 rounded-pill site-login" onClick={cerrarMenu}>
+                                Mi cuenta
+                            </Link>
+                            <button type="button" className="btn btn-sm btn-outline-light ms-2" onClick={manejarCierreSesion}>
+                                Cerrar sesión
+                            </button>
+                        </>
+                    ) : (
+                        <Link to="/login" className="btn btn-sm btn-light text-success fw-bold ms-3 px-3 rounded-pill site-login" onClick={cerrarMenu}>
+                            Iniciar sesión
+                        </Link>
+                    )}
                     
                 </div>
             </div>
