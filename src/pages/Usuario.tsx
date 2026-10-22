@@ -38,7 +38,11 @@ function Usuario() {
 
   const manejarEliminacion = () => {
     if (!window.confirm('¿Seguro que quieres eliminar tu cuenta? Esta acción no se puede deshacer.')) return;
-    eliminarCuenta();
+    const resultado = eliminarCuenta();
+    if (!resultado.correcto) {
+      setError(resultado.mensaje);
+      return;
+    }
     navegar('/');
   };
 

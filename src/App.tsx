@@ -1,4 +1,5 @@
-import { Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
+import type { ReactNode } from 'react';
 import './App.css';
 import Navbar from './componentes/organism/Navbar';
 import Inicio from './pages/Inicio';
@@ -12,6 +13,15 @@ import ServicioDetalle from './pages/ServiciosDetalle';
 import AdminServicios from './pages/AdminServicios';
 import Registro from './pages/Registro';
 import Usuario from './pages/Usuario';
+import AdminUsuarios from './pages/AdminUsuarios';
+import { useSesion } from './context/SesionContexto';
+
+function RutaAdministrador({ children }: { children: ReactNode }) {
+  const { usuario, esAdmin } = useSesion();
+  if (!usuario) return <Navigate to="/login" replace />;
+  if (!esAdmin) return <Navigate to="/usuario" replace />;
+  return children;
+}
 
 function App() {
 
@@ -28,7 +38,8 @@ function App() {
 
         <Route path="/servicios" element={<Servicios />} />
         <Route path="/servicios/:id" element={<ServicioDetalle />} />
-        <Route path="/admin/servicios" element={<AdminServicios />} />
+        <Route path="/admin/servicios" element={<RutaAdministrador><AdminServicios /></RutaAdministrador>} />
+        <Route path="/admin/usuarios" element={<RutaAdministrador><AdminUsuarios /></RutaAdministrador>} />
         
         <Route path="/contacto" element={<Contacto />} />
 

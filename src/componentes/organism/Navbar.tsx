@@ -5,7 +5,7 @@ import { useSesion } from '../../context/SesionContexto';
 function Navbar() {
     const [menuAbierto, setMenuAbierto] = useState(false);
     const cerrarMenu = () => setMenuAbierto(false);
-    const { usuario, cerrarSesion } = useSesion();
+    const { usuario, cerrarSesion, esAdmin } = useSesion();
     const navegar = useNavigate();
 
     const manejarCierreSesion = () => {
@@ -41,6 +41,11 @@ function Navbar() {
 
                     {usuario ? (
                         <>
+                            {esAdmin && (
+                                <Link to="/admin/servicios" className="btn btn-sm btn-warning fw-bold ms-3 px-3 rounded-pill" onClick={cerrarMenu}>
+                                    Administración
+                                </Link>
+                            )}
                             <Link to="/usuario" className="btn btn-sm btn-light text-success fw-bold ms-3 px-3 rounded-pill site-login" onClick={cerrarMenu}>
                                 Mi cuenta
                             </Link>

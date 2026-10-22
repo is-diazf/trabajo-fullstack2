@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useServicios } from "../context/ServiciosContexto";
 import { Link } from "react-router-dom";
+import type { Servicio } from "../data/ServiciosData";
 
 function AdminServicios() {
 
@@ -37,7 +38,7 @@ function AdminServicios() {
   };
 
   // Cargar datos en el formulario para editar
-  const handleEditarClick = (servicio: any) => {
+  const handleEditarClick = (servicio: Servicio) => {
     setEditandoId(servicio.id);
     setFormData({
       titulo: servicio.titulo,
@@ -57,9 +58,10 @@ function AdminServicios() {
     <div className="container py-5">
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h1 className="fw-bold text-success">Panel de Administración: Servicios</h1>
-        <Link to="/servicios" className="btn btn-outline-secondary">
-          ← Ir a la vista pública
-        </Link>
+        <div className="d-flex gap-2">
+          <Link to="/admin/usuarios" className="btn btn-outline-success">Administrar usuarios</Link>
+          <Link to="/servicios" className="btn btn-outline-secondary">Ir a la vista pública</Link>
+        </div>
       </div>
 
       <div className="row g-4">
@@ -81,7 +83,7 @@ function AdminServicios() {
                 </div>
                 <div className="mb-3">
                   <label className="form-label fw-bold">Precio ($)</label>
-                  <input type="number" className="form-control" name="precio" value={formData.precio} onChange={handleChange} required />
+                  <input type="number" min="0" className="form-control" name="precio" value={formData.precio} onChange={handleChange} required />
                 </div>
                 <div className="mb-3">
                   <label className="form-label fw-bold">URL de la Imagen</label>

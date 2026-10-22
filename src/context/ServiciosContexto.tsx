@@ -58,6 +58,7 @@ export function ServiciosProvider({ children }: { children: ReactNode }) {
 }
 
 // Hook personalizado para usar el contexto más fácil
+// eslint-disable-next-line react-refresh/only-export-components
 export function useServicios() {
   const context = useContext(ServiciosContext);
   if (!context) throw new Error('useServicios debe usarse dentro de un ServiciosProvider');
