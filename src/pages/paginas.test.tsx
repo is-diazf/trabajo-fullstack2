@@ -4,6 +4,7 @@ import { MemoryRouter } from 'react-router-dom';
 import App from '../App';
 import { SesionProvider } from '../context/SesionContexto';
 import { ServiciosProvider } from '../context/ServiciosContexto';
+import { NovedadesProvider } from '../context/NovedadesContexto';
 
 afterEach(cleanup);
 beforeEach(() => localStorage.clear());
@@ -13,7 +14,9 @@ function renderApp(initialEntry = '/') {
     <MemoryRouter initialEntries={[initialEntry]}>
       <ServiciosProvider>
         <SesionProvider>
-          <App />
+          <NovedadesProvider>
+            <App />
+          </NovedadesProvider>
         </SesionProvider>
       </ServiciosProvider>
     </MemoryRouter>,
@@ -21,6 +24,15 @@ function renderApp(initialEntry = '/') {
 }
 
 describe('páginas públicas', () => {
+  it('muestra las novedades iniciales aunque el navegador guardara una lista vacía', () => {
+    localStorage.setItem('novedades_vet', '[]');
+    renderApp('/novedades');
+
+    expect(screen.getByRole('heading', { name: 'Novedades' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Nueva campaña de vacunación' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Horario extendido los sábados' })).toBeTruthy();
+  });
+
   it('muestra Inicio con la navegación y el footer compartidos', () => {
     renderApp();
 
@@ -143,5 +155,84 @@ describe('páginas públicas', () => {
     renderApp('/admin/servicios');
 
     expect(screen.getByRole('heading', { name: 'Login' })).toBeTruthy();
+  });
+    // ==========================================
+  // PRUEBAS DE ISRAEL (PERSONA 2)
+  // ==========================================
+
+  it('11. debe mostrar el listado de servicios y permitir filtrarlos', () => {
+    renderApp('/servicios');
+
+    // Verificamos que los servicios iniciales estén
+    expect(screen.getByRole('heading', { name: 'Esterilización de mascotas' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Perruquería' })).toBeTruthy();
+
+    // Usamos el buscador
+    const buscador = screen.getByPlaceholderText(/Buscar servicio/i);
+    fireEvent.change(buscador, { target: { value: 'baño' } });
+
+    // La perruquería se queda, la esterilización desaparece
+    expect(screen.getByRole('heading', { name: 'Perruquería' })).toBeTruthy();
+    expect(screen.queryByRole('heading', { name: 'Esterilización de mascotas' })).toBeNull();
+  });
+
+  it('12. debe mostrar el detalle de un servicio específico', () => {
+    renderApp('/servicios/1');
+
+    expect(screen.getByRole('heading', { name: 'Esterilización de mascotas' })).toBeTruthy();
+    expect(screen.getByText(/incluye anestesia y recuperación/i)).toBeTruthy();
+    expect(screen.getByText(/30.000/)).toBeTruthy(); // Verifica el precio
+  });
+
+  it('13. debe mostrar el detalle de una novedad específica', () => {
+    renderApp('/novedades/1');
+
+    expect(screen.getByRole('heading', { name: 'Nueva campaña de vacunación' })).toBeTruthy();
+    expect(screen.getByText(/Durante todo el mes de mayo/i)).toBeTruthy();
+  });
+
+  it('14. el admin puede crear un nuevo servicio desde el panel', () => {
+    // 1. Iniciamos sesión como admin
+    renderApp('/login');
+    fireEvent.change(screen.getByLabelText('Correo Electrónico'), { target: { value: 'admin.admin@admin.admin' } });
+    fireEvent.change(screen.getByLabelText('Contraseña'), { target: { value: 'increibleclavesupersegura' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Iniciar sesión' }));
+
+    // 2. Llenamos el formulario de crear servicio
+    fireEvent.change(screen.getByLabelText('Título'), { target: { value: 'Nuevo Servicio Test' } });
+    fireEvent.change(screen.getByLabelText('Descripción'), { target: { value: 'Descripción de prueba' } });
+    fireEvent.change(screen.getByLabelText('Precio ($)'), { target: { value: '15000' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Guardar Servicio' }));
+
+    // 3. Verificamos que aparezca en la tabla
+    expect(screen.getByRole('cell', { name: 'Nuevo Servicio Test' })).toBeTruthy();
+  });
+
+  it('15. el admin puede editar y eliminar una novedad', () => {
+    // 1. Iniciamos sesión como admin y vamos a novedades
+    renderApp('/login');
+    fireEvent.change(screen.getByLabelText('Correo Electrónico'), { target: { value: 'admin.admin@admin.admin' } });
+    fireEvent.change(screen.getByLabelText('Contraseña'), { target: { value: 'increibleclavesupersegura' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Iniciar sesión' }));
+    
+    // Navegamos a la gestión de novedades (asumiendo que el link está ahí)
+    fireEvent.click(screen.getByRole('link', { name: 'Administrar novedades' })); 
+
+    // 2. Probamos EDITAR
+    const filaNovedad = screen.getByRole('row', { name: /Nueva campaña de vacunación/i });
+    fireEvent.click(within(filaNovedad).getByRole('button', { name: 'Editar' }));
+    
+    fireEvent.change(screen.getByLabelText('Título'), { target: { value: 'Título Editado' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Guardar Cambios' }));
+    expect(screen.getByRole('cell', { name: 'Título Editado' })).toBeTruthy();
+
+    // 3. Probamos ELIMINAR
+    // Mockeamos el window.confirm para que devuelva true automáticamente
+    window.confirm = () => true;
+    const filaEditada = screen.getByRole('row', { name: /Título Editado/i });
+    fireEvent.click(within(filaEditada).getByRole('button', { name: 'Eliminar' }));
+
+    // Verificamos que ya no esté en la tabla
+    expect(screen.queryByRole('cell', { name: 'Título Editado' })).toBeNull();
   });
 });

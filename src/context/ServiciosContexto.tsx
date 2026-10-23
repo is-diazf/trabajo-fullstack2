@@ -20,10 +20,14 @@ interface ServiciosContextType {
 const ServiciosContext = createContext<ServiciosContextType | undefined>(undefined);
 
 export function ServiciosProvider({ children }: { children: ReactNode }) {
-  // 1. Estado: intenta leer del localStorage, si no hay, usa los datos iniciales
   const [servicios, setServicios] = useState<Servicio[]>(() => {
     const guardados = localStorage.getItem('servicios_vet');
-    return guardados ? JSON.parse(guardados) : datosIniciales;
+    const datosParseados = guardados ? JSON.parse(guardados) : [];
+    
+    if (datosParseados.length > 0) {
+      return datosParseados;
+    }
+    return datosIniciales;
   });
 
   // 2. Efecto: cada vez que el arreglo cambie, lo guardamos en localStorage
@@ -33,7 +37,6 @@ export function ServiciosProvider({ children }: { children: ReactNode }) {
 
   // 3. Funciones CRUD
   const agregarServicio = (nuevoServicio: Omit<Servicio, 'id'>) => {
-    // Generamos un ID único basado en la fecha actual
     const nuevoId = Date.now(); 
     setServicios([...servicios, { ...nuevoServicio, id: nuevoId }]);
   };
@@ -57,8 +60,6 @@ export function ServiciosProvider({ children }: { children: ReactNode }) {
   );
 }
 
-// Hook personalizado para usar el contexto más fácil
-// eslint-disable-next-line react-refresh/only-export-components
 export function useServicios() {
   const context = useContext(ServiciosContext);
   if (!context) throw new Error('useServicios debe usarse dentro de un ServiciosProvider');

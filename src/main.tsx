@@ -7,15 +7,18 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 // 1. IMPORTAMOS EL PROVEEDOR
 import { ServiciosProvider } from './context/ServiciosContexto.tsx' 
 import { SesionProvider } from './context/SesionContexto.tsx'
+import { NovedadesProvider } from './context/NovedadesContexto.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
       <ServiciosProvider>
         <SesionProvider>
-          <App />
+          <NovedadesProvider>
+            <App />
+          </NovedadesProvider>
         </SesionProvider>
       </ServiciosProvider>
-    </BrowserRouter>
+    </BrowserRouter>  
   </StrictMode>,
 )

@@ -15,6 +15,8 @@ import Registro from './pages/Registro';
 import Usuario from './pages/Usuario';
 import AdminUsuarios from './pages/AdminUsuarios';
 import { useSesion } from './context/SesionContexto';
+import NovedadDetalle from './pages/NovedadDetalle';
+import AdminNovedades from './pages/AdminNovedades';
 
 function RutaAdministrador({ children }: { children: ReactNode }) {
   const { usuario, esAdmin } = useSesion();
@@ -35,6 +37,8 @@ function App() {
         <Route path="/" element={<Inicio />} />
 
         <Route path="/novedades" element={<Novedades />} />
+        <Route path="/novedades/:id" element={<NovedadDetalle />} />
+        <Route path="/admin/novedades" element={<AdminNovedades />} />
 
         <Route path="/servicios" element={<Servicios />} />
         <Route path="/servicios/:id" element={<ServicioDetalle />} />
