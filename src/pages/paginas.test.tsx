@@ -57,6 +57,45 @@ describe('páginas públicas', () => {
     expect(screen.getByRole('heading', { name: 'Envíanos tu consulta' })).toBeTruthy();
   });
 
+  it('abre y cierra el formulario de agenda desde el navbar', () => {
+    renderApp();
+
+    expect(screen.queryByRole('button', { name: 'Agendar hora' })).toBeNull();
+    iniciarSesionComoAdmin();
+    fireEvent.click(screen.getByRole('button', { name: 'Agendar hora' }));
+    expect(screen.getByRole('dialog', { name: 'Agendar una hora' })).toBeTruthy();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Cerrar' }));
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('valida y confirma el formulario de agenda', () => {
+    renderApp();
+
+    iniciarSesionComoAdmin();
+    fireEvent.click(screen.getByRole('button', { name: 'Agendar hora' }));
+    fireEvent.change(screen.getByLabelText('Tu nombre'), { target: { value: 'Ana Pérez' } });
+    fireEvent.change(screen.getByLabelText('Correo electrónico'), { target: { value: 'ana@example.com' } });
+    fireEvent.change(screen.getByLabelText('Nombre de tu mascota'), { target: { value: 'Luna' } });
+    fireEvent.change(screen.getByLabelText('Servicio'), { target: { value: 'Perruquería' } });
+    fireEvent.change(screen.getByLabelText('Fecha'), { target: { value: '2027-01-15' } });
+    fireEvent.change(screen.getByLabelText('Hora'), { target: { value: '10:30' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Solicitar hora' }));
+
+    expect(screen.getByRole('status').textContent).toMatch(/confirmar disponibilidad/i);
+  });
+
+  function iniciarSesionComoAdmin() {
+    fireEvent.click(screen.getByRole('link', { name: 'Iniciar sesión' }));
+    fireEvent.change(screen.getByLabelText('Correo Electrónico'), {
+      target: { value: 'admin.admin@admin.admin' },
+    });
+    fireEvent.change(screen.getByLabelText('Contraseña'), {
+      target: { value: 'increibleclavesupersegura' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Iniciar sesión' }));
+  }
+
   it('muestra los errores de validación del formulario de contacto', () => {
     renderApp('/contacto');
 

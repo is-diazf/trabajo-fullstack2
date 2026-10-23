@@ -28,13 +28,12 @@ body {
 
 #root {
   width: 100%;
-  max-width: 1280px;
+  max-width: none;
   min-height: 100svh;
-  margin: 0 auto;
+  margin: 0;
   display: flex;
   flex-direction: column;
   background: #fff;
-  box-shadow: 0 0 40px rgba(31, 57, 40, 0.06);
 }
 
 h1,
