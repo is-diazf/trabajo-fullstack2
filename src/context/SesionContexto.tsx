@@ -55,11 +55,11 @@ function leerUsuarios(): Usuario[] {
     return { ...usuario, admin: 'admin' in usuario ? usuario.admin : false };
   });
 
-  const adminInicial = usuariosData.find((usuario) => usuario.admin);
-  if (adminInicial && !usuariosValidos.some((usuario) => usuario.correo === adminInicial.correo)) {
-    usuariosValidos.push(adminInicial);
-  }
-  return usuariosValidos;
+  const usuariosInicialesFaltantes = usuariosData.filter(
+    (usuarioInicial) =>
+      !usuariosValidos.some((usuario) => usuario.correo === usuarioInicial.correo),
+  );
+  return [...usuariosValidos, ...usuariosInicialesFaltantes];
 }
 
 export function SesionProvider({ children }: { children: ReactNode }) {

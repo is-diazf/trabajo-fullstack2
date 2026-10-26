@@ -74,17 +74,20 @@ function Navbar() {
                     <div className="site-nav-actions">
                         {usuario ? (
                             <>
-                                <button className="btn btn-sm btn-outline-light rounded-pill px-3" type="button" onClick={abrirAgenda}>
-                                    Agendar hora
-                                </button>
-                            {esAdmin && (
+                                {esAdmin ? (
                                     <Link to="/admin/servicios" className="btn btn-sm btn-warning fw-bold px-3 rounded-pill" onClick={cerrarMenu}>
                                         Administración
                                     </Link>
-                            )}
-                                <Link to="/usuario" className="btn btn-sm btn-light text-success fw-bold px-3 rounded-pill site-login" onClick={cerrarMenu}>
-                                    Mi cuenta
-                                </Link>
+                                ) : (
+                                    <>
+                                        <button className="btn btn-sm btn-outline-light rounded-pill px-3" type="button" onClick={abrirAgenda}>
+                                            Agendar hora
+                                        </button>
+                                        <Link to="/usuario" className="btn btn-sm btn-light text-success fw-bold px-3 rounded-pill site-login" onClick={cerrarMenu}>
+                                            Mi cuenta
+                                        </Link>
+                                    </>
+                                )}
                                 <button type="button" className="btn btn-sm btn-outline-light" onClick={manejarCierreSesion}>
                                     Cerrar sesión
                                 </button>

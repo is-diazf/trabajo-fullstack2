@@ -57,7 +57,7 @@ function AdminServicios() {
   return (
     <div className="container py-5">
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h1 className="fw-bold text-success">Panel de Administración: Servicios</h1>
+        <h1 className="fw-bold text-success mb-0">Panel de Administración: Servicios</h1>
         <div className="d-flex gap-2">
           <Link to="/admin/usuarios" className="btn btn-outline-success">Administrar usuarios</Link>
           <Link to="/servicios" className="btn btn-outline-secondary">Ir a la vista pública</Link>

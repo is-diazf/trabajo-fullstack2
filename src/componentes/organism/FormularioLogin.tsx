@@ -18,7 +18,7 @@ function FormularioLogin() {
             setError(resultado.mensaje);
             return;
         }
-        navegar(resultado.esAdmin ? "/admin/servicios" : "/usuario");
+        navegar("/");
     }
 
     return(

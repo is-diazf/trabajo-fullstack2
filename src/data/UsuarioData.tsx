@@ -22,7 +22,7 @@ export const usuariosData: Usuario[] = [
     id: '2',
     nombre: 'María García', 
     correo: 'maria.garcia@example.com', 
-    contrasena: 'password2',
+    contrasena: 'contrasena123',
     admin: false
   }
   
