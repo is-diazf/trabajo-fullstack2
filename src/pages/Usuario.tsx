@@ -53,15 +53,18 @@ function Usuario() {
         <div className="col-12 col-md-8 col-lg-6">
           <section className="card shadow-sm p-4">
             <h1 className="h2 mb-3">Mi cuenta</h1>
-            <p>Gestiona los datos asociados a tu cuenta.</p>
-            <div className="row g-3 mb-4">
-              <div className="col-12 col-sm-6">
-                <Link className="btn btn-outline-success w-100" to="/carrito">Ver mi carrito</Link>
+              <hr className="my-4" />
+              <h5 className="mb-3">Mis Mascotas y Compras</h5>
+              <div className="d-flex flex-column gap-3">
+                <Link to="/historial-medico" className="btn btn-outline-primary text-start">
+                  Ver Historial Médico
+                </Link>
+                <Link to="/historial-compras" className="btn btn-outline-primary text-start">
+                  Ver Historial de Compras
+                </Link>
+                <Link className="btn btn-outline-primary text-start" to="/carrito">Ver mi carrito
+                </Link>
               </div>
-              <div className="col-12 col-sm-6">
-                <Link className="btn btn-outline-success w-100" to="/historial-compras">Historial de compras</Link>
-              </div>
-            </div>
             <form onSubmit={manejarActualizacion} noValidate>
               {error && <div className="alert alert-danger" role="alert">{error}</div>}
               {mensaje && <div className="alert alert-success" role="status">{mensaje}</div>}
