@@ -8,15 +8,18 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 import { ServiciosProvider } from './context/ServiciosContexto.tsx' 
 import { SesionProvider } from './context/SesionContexto.tsx'
 import { NovedadesProvider } from './context/NovedadesContexto.tsx'
+import { CarritoProvider } from './context/CarritoContexto.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
       <ServiciosProvider>
         <SesionProvider>
-          <NovedadesProvider>
-            <App />
-          </NovedadesProvider>
+          <CarritoProvider>
+            <NovedadesProvider>
+              <App />
+            </NovedadesProvider>
+          </CarritoProvider>
         </SesionProvider>
       </ServiciosProvider>
     </BrowserRouter>  

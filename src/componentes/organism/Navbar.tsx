@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSesion } from '../../context/SesionContexto';
 import { useServicios } from '../../context/ServiciosContexto';
+import { useCarrito } from '../../context/CarritoContexto';
 
 function Navbar() {
     const [menuAbierto, setMenuAbierto] = useState(false);
@@ -11,6 +12,7 @@ function Navbar() {
     const cerrarMenu = () => setMenuAbierto(false);
     const { usuario, cerrarSesion, esAdmin } = useSesion();
     const { servicios } = useServicios();
+    const { totalUnidades } = useCarrito();
     const navegar = useNavigate();
 
     useEffect(() => {
@@ -67,6 +69,7 @@ function Navbar() {
                         <Link className="site-nav-link" to="/" onClick={cerrarMenu}>Inicio</Link>
                         <Link className="site-nav-link" to="/novedades" onClick={cerrarMenu}>Novedades</Link>
                         <Link className="site-nav-link" to="/servicios" onClick={cerrarMenu}>Servicios</Link>
+                        <Link className="site-nav-link" to="/productos" onClick={cerrarMenu}>Productos</Link>
                         <Link className="site-nav-link" to="/info" onClick={cerrarMenu}>Quiénes somos</Link>
                         <Link className="site-nav-link" to="/contacto" onClick={cerrarMenu}>Contacto</Link>
                     </div>
@@ -83,6 +86,9 @@ function Navbar() {
                                         <button className="btn btn-sm btn-outline-light rounded-pill px-3" type="button" onClick={abrirAgenda}>
                                             Agendar hora
                                         </button>
+                                        <Link to="/carrito" className="btn btn-sm btn-outline-light rounded-pill px-3" onClick={cerrarMenu}>
+                                            Carrito ({totalUnidades})
+                                        </Link>
                                         <Link to="/usuario" className="btn btn-sm btn-light text-success fw-bold px-3 rounded-pill site-login" onClick={cerrarMenu}>
                                             Mi cuenta
                                         </Link>

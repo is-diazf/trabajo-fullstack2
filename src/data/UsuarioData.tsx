@@ -7,7 +7,7 @@ export interface Usuario {
   admin: boolean;
 }
 
-export type DatosUsuario = Omit<Usuario, 'id' | 'contrasena'>;
+export type DatosUsuario = Omit<Usuario, 'contrasena'>;
 export type UsuarioAdministrable = Omit<Usuario, 'contrasena'>;
 
 export const usuariosData: Usuario[] = [

@@ -3,6 +3,7 @@ import { useState, type FormEvent } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import CampoFormulario from '../componentes/molecules/CampoFormulario';
 import { useSesion } from '../context/SesionContexto';
+import { Link } from 'react-router-dom';
 
 function Usuario() {
   const { usuario, actualizarUsuario, eliminarCuenta, cerrarSesion } = useSesion();
@@ -53,6 +54,14 @@ function Usuario() {
           <section className="card shadow-sm p-4">
             <h1 className="h2 mb-3">Mi cuenta</h1>
             <p>Gestiona los datos asociados a tu cuenta.</p>
+            <div className="row g-3 mb-4">
+              <div className="col-12 col-sm-6">
+                <Link className="btn btn-outline-success w-100" to="/carrito">Ver mi carrito</Link>
+              </div>
+              <div className="col-12 col-sm-6">
+                <Link className="btn btn-outline-success w-100" to="/historial-compras">Historial de compras</Link>
+              </div>
+            </div>
             <form onSubmit={manejarActualizacion} noValidate>
               {error && <div className="alert alert-danger" role="alert">{error}</div>}
               {mensaje && <div className="alert alert-success" role="status">{mensaje}</div>}

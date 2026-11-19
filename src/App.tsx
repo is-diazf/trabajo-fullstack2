@@ -17,11 +17,20 @@ import AdminUsuarios from './pages/AdminUsuarios';
 import { useSesion } from './context/SesionContexto';
 import NovedadDetalle from './pages/NovedadDetalle';
 import AdminNovedades from './pages/AdminNovedades';
+import Productos from './pages/Productos';
+import Carrito from './pages/Carrito';
+import HistorialCompras from './pages/HistorialCompras';
 
 function RutaAdministrador({ children }: { children: ReactNode }) {
   const { usuario, esAdmin } = useSesion();
   if (!usuario) return <Navigate to="/login" replace />;
   if (!esAdmin) return <Navigate to="/usuario" replace />;
+  return children;
+}
+
+function RutaConSesion({ children }: { children: ReactNode }) {
+  const { usuario } = useSesion();
+  if (!usuario) return <Navigate to="/login" replace />;
   return children;
 }
 
@@ -41,6 +50,9 @@ function App() {
         <Route path="/admin/novedades" element={<AdminNovedades />} />
 
         <Route path="/servicios" element={<Servicios />} />
+        <Route path="/productos" element={<Productos />} />
+        <Route path="/carrito" element={<RutaConSesion><Carrito /></RutaConSesion>} />
+        <Route path="/historial-compras" element={<RutaConSesion><HistorialCompras /></RutaConSesion>} />
         <Route path="/servicios/:id" element={<ServicioDetalle />} />
         <Route path="/admin/servicios" element={<RutaAdministrador><AdminServicios /></RutaAdministrador>} />
         <Route path="/admin/usuarios" element={<RutaAdministrador><AdminUsuarios /></RutaAdministrador>} />

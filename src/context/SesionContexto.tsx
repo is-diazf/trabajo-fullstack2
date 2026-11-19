@@ -232,7 +232,12 @@ export function SesionProvider({ children }: { children: ReactNode }) {
     <SesionContext.Provider
       value={{
         usuario: usuarioActual
-          ? { nombre: usuarioActual.nombre, correo: usuarioActual.correo, admin: usuarioActual.admin }
+          ? {
+              id: usuarioActual.id,
+              nombre: usuarioActual.nombre,
+              correo: usuarioActual.correo,
+              admin: usuarioActual.admin,
+            }
           : null,
         esAdmin: usuarioActual?.admin ?? false,
         usuarios: usuarios.map((usuario) => ({

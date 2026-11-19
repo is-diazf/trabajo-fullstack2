@@ -5,6 +5,7 @@ import App from '../App';
 import { SesionProvider } from '../context/SesionContexto';
 import { ServiciosProvider } from '../context/ServiciosContexto';
 import { NovedadesProvider } from '../context/NovedadesContexto';
+import { CarritoProvider } from '../context/CarritoContexto';
 
 afterEach(cleanup);
 beforeEach(() => localStorage.clear());
@@ -14,9 +15,11 @@ function renderApp(initialEntry = '/') {
     <MemoryRouter initialEntries={[initialEntry]}>
       <ServiciosProvider>
         <SesionProvider>
-          <NovedadesProvider>
-            <App />
-          </NovedadesProvider>
+          <CarritoProvider>
+            <NovedadesProvider>
+              <App />
+            </NovedadesProvider>
+          </CarritoProvider>
         </SesionProvider>
       </ServiciosProvider>
     </MemoryRouter>,
@@ -24,6 +27,31 @@ function renderApp(initialEntry = '/') {
 }
 
 describe('páginas públicas', () => {
+  it('permite comprar productos y consultar la compra desde el perfil', () => {
+    renderApp('/productos');
+
+    expect(screen.getByRole('heading', { name: 'Productos para cuidar y consentir' })).toBeTruthy();
+    expect(screen.getAllByRole('link', { name: 'Inicia sesión para comprar' })).toHaveLength(4);
+
+    iniciarSesionComoUsuario();
+    fireEvent.click(screen.getByRole('link', { name: 'Productos' }));
+    fireEvent.click(screen.getAllByRole('button', { name: 'Agregar al carrito' })[0]);
+    fireEvent.click(screen.getByRole('link', { name: 'Carrito (1)' }));
+
+    expect(screen.getByRole('heading', { name: 'Mi carrito' })).toBeTruthy();
+    expect(screen.getAllByText('$8.990')).toHaveLength(3);
+    fireEvent.click(screen.getByRole('button', { name: 'Finalizar compra' }));
+    expect(screen.getByRole('status').textContent).toMatch(/compra registrada en tu historial/i);
+    fireEvent.click(screen.getByRole('link', { name: 'Mi cuenta' }));
+    fireEvent.click(screen.getByRole('link', { name: 'Historial de compras' }));
+
+    expect(screen.getByRole('heading', { name: 'Historial de compras' })).toBeTruthy();
+    expect(screen.getByText(/Juguete interactivo × 1/)).toBeTruthy();
+    expect(screen.getByText('Total: $8.990')).toBeTruthy();
+    expect(JSON.parse(localStorage.getItem('carritos_vet') ?? '{}')['2']).toEqual([]);
+    expect(JSON.parse(localStorage.getItem('historial_compras_vet') ?? '{}')['2']).toHaveLength(1);
+  });
+
   it('muestra las novedades iniciales aunque el navegador guardara una lista vacía', () => {
     localStorage.setItem('novedades_vet', '[]');
     renderApp('/novedades');
