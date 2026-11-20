@@ -19,7 +19,8 @@ import NovedadDetalle from './pages/NovedadDetalle';
 import AdminNovedades from './pages/AdminNovedades';
 
 function RutaAdministrador({ children }: { children: ReactNode }) {
-  const { usuario, esAdmin } = useSesion();
+  const { usuario, esAdmin, cargando } = useSesion();
+  if (cargando) return null;
   if (!usuario) return <Navigate to="/login" replace />;
   if (!esAdmin) return <Navigate to="/usuario" replace />;
   return children;

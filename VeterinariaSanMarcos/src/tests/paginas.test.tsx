@@ -1,13 +1,109 @@
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
 import App from '../App';
 import { SesionProvider } from '../context/SesionContexto';
 import { ServiciosProvider } from '../context/ServiciosContexto';
 import { NovedadesProvider } from '../context/NovedadesContexto';
 
-afterEach(cleanup);
-beforeEach(() => localStorage.clear());
+const backend = vi.hoisted(() => {
+  type UsuarioFalso = { id: number; nombre: string; correo: string; contrasena: string; admin: boolean };
+  type Cuerpo = Record<string, unknown>;
+
+  const estado = { usuarios: [] as UsuarioFalso[], siguienteId: 1 };
+
+  const reiniciar = () => {
+    estado.usuarios = [
+      { id: 1, nombre: 'Administrador', correo: 'admin.admin@admin.admin', contrasena: 'increibleclavesupersegura', admin: true },
+      { id: 2, nombre: 'María García', correo: 'maria.garcia@example.com', contrasena: 'contrasena123', admin: false },
+    ];
+    estado.siguienteId = 3;
+  };
+
+  const fallar = (status: number, error: string) =>
+    Promise.reject({ isAxiosError: true, response: { status, data: { error } } });
+  const publico = ({ id, nombre, correo, admin }: UsuarioFalso) => ({ id, nombre, correo, admin });
+  const sesion = (usuario: UsuarioFalso) => ({ data: { token: `token-${usuario.id}`, usuario: publico(usuario) } });
+  const usuarioDelToken = () =>
+    estado.usuarios.find((usuario) => `token-${usuario.id}` === localStorage.getItem('token_vet'));
+  const correoEnUso = (correo: unknown, idExcluido?: number) =>
+    estado.usuarios.some((usuario) => usuario.correo === String(correo).trim().toLowerCase() && usuario.id !== idExcluido);
+  const idDeRuta = (url: string) => Number(url.split('/').pop());
+
+  const api = {
+    interceptors: { response: { use: () => 0, eject: () => undefined } },
+
+    get: async (url: string) => {
+      const actual = usuarioDelToken();
+      if (!actual) return fallar(401, 'No autorizado.');
+      if (url === '/auth/perfil') return { data: publico(actual) };
+      if (url === '/usuarios' && actual.admin) return { data: estado.usuarios.map(publico) };
+      return fallar(403, 'Acceso denegado.');
+    },
+
+    post: async (url: string, cuerpo: Cuerpo) => {
+      if (url === '/auth/login') {
+        const usuario = estado.usuarios.find(
+          (candidato) => candidato.correo === String(cuerpo.correo).trim().toLowerCase() && candidato.contrasena === cuerpo.contrasena,
+        );
+        return usuario ? sesion(usuario) : fallar(401, 'Correo o contraseña incorrectos.');
+      }
+      if (url === '/auth/registro' || url === '/usuarios') {
+        if (correoEnUso(cuerpo.correo)) return fallar(409, 'Ya existe una cuenta con ese correo.');
+        const nuevo: UsuarioFalso = {
+          id: estado.siguienteId++,
+          nombre: String(cuerpo.nombre).trim(),
+          correo: String(cuerpo.correo).trim().toLowerCase(),
+          contrasena: String(cuerpo.contrasena),
+          admin: url === '/usuarios' && cuerpo.admin === true,
+        };
+        estado.usuarios.push(nuevo);
+        return url === '/usuarios' ? { data: publico(nuevo) } : sesion(nuevo);
+      }
+      return fallar(404, 'No encontrado.');
+    },
+
+    put: async (url: string, cuerpo: Cuerpo) => {
+      const actual = usuarioDelToken();
+      if (!actual) return fallar(401, 'No autorizado.');
+      const id = url === '/auth/perfil' ? actual.id : idDeRuta(url);
+      const usuario = estado.usuarios.find((candidato) => candidato.id === id);
+      if (!usuario) return fallar(404, 'No se encontró la cuenta seleccionada.');
+      if (correoEnUso(cuerpo.correo, id)) return fallar(409, 'Ese correo ya está asociado a otra cuenta.');
+      usuario.nombre = String(cuerpo.nombre).trim();
+      usuario.correo = String(cuerpo.correo).trim().toLowerCase();
+      if (url === '/auth/perfil') return sesion(usuario);
+      usuario.admin = cuerpo.admin === true;
+      if (cuerpo.contrasena) usuario.contrasena = String(cuerpo.contrasena);
+      return { data: publico(usuario) };
+    },
+
+    delete: async (url: string) => {
+      const actual = usuarioDelToken();
+      if (!actual) return fallar(401, 'No autorizado.');
+      const id = url === '/auth/perfil' ? actual.id : idDeRuta(url);
+      estado.usuarios = estado.usuarios.filter((usuario) => usuario.id !== id);
+      return { data: undefined };
+    },
+  };
+
+  return { estado, reiniciar, api };
+});
+
+vi.mock('../servicios/api', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../servicios/api')>()),
+  default: backend.api,
+}));
+
+afterEach(() => {
+  cleanup();
+  vi.unstubAllGlobals();
+});
+beforeEach(() => {
+  localStorage.clear();
+  backend.reiniciar();
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, status: 201 }));
+});
 
 function renderApp(initialEntry = '/') {
   return render(
@@ -57,11 +153,11 @@ describe('páginas públicas', () => {
     expect(screen.getByRole('heading', { name: 'Envíanos tu consulta' })).toBeTruthy();
   });
 
-  it('abre y cierra el formulario de agenda desde el navbar', () => {
+  it('abre y cierra el formulario de agenda desde el navbar', async () => {
     renderApp();
 
     expect(screen.queryByRole('button', { name: 'Agendar hora' })).toBeNull();
-    iniciarSesionComoUsuario();
+    await iniciarSesionComoUsuario();
     expect(screen.getByRole('link', { name: 'Mi cuenta' })).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Agendar hora' }));
     expect(screen.getByRole('dialog', { name: 'Agendar una hora' })).toBeTruthy();
@@ -70,10 +166,10 @@ describe('páginas públicas', () => {
     expect(screen.queryByRole('dialog')).toBeNull();
   });
 
-  it('valida y confirma el formulario de agenda', () => {
+  it('valida y confirma el formulario de agenda', async () => {
     renderApp();
 
-    iniciarSesionComoUsuario();
+    await iniciarSesionComoUsuario();
     fireEvent.click(screen.getByRole('button', { name: 'Agendar hora' }));
     fireEvent.change(screen.getByLabelText('Tu nombre'), { target: { value: 'Ana Pérez' } });
     fireEvent.change(screen.getByLabelText('Correo electrónico'), { target: { value: 'ana@example.com' } });
@@ -86,7 +182,7 @@ describe('páginas públicas', () => {
     expect(screen.getByRole('status').textContent).toMatch(/confirmar disponibilidad/i);
   });
 
-  function iniciarSesionComoAdmin() {
+  async function iniciarSesionComoAdmin() {
     fireEvent.click(screen.getByRole('link', { name: 'Iniciar sesión' }));
     fireEvent.change(screen.getByLabelText('Correo Electrónico'), {
       target: { value: 'admin.admin@admin.admin' },
@@ -95,10 +191,10 @@ describe('páginas públicas', () => {
       target: { value: 'increibleclavesupersegura' },
     });
     fireEvent.click(screen.getByRole('button', { name: 'Iniciar sesión' }));
-    fireEvent.click(screen.getByRole('link', { name: 'Administración' }));
+    fireEvent.click(await screen.findByRole('link', { name: 'Administración' }));
   }
 
-  function iniciarSesionComoUsuario() {
+  async function iniciarSesionComoUsuario() {
     fireEvent.click(screen.getByRole('link', { name: 'Iniciar sesión' }));
     fireEvent.change(screen.getByLabelText('Correo Electrónico'), {
       target: { value: 'maria.garcia@example.com' },
@@ -107,11 +203,12 @@ describe('páginas públicas', () => {
       target: { value: 'contrasena123' },
     });
     fireEvent.click(screen.getByRole('button', { name: 'Iniciar sesión' }));
+    await screen.findByRole('link', { name: 'Mi cuenta' });
   }
 
-  it('muestra solo el acceso de administración a los administradores', () => {
+  it('muestra solo el acceso de administración a los administradores', async () => {
     renderApp();
-    iniciarSesionComoAdmin();
+    await iniciarSesionComoAdmin();
 
     expect(screen.getByRole('link', { name: 'Administración' })).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Agendar hora' })).toBeNull();
@@ -128,7 +225,7 @@ describe('páginas públicas', () => {
     expect(screen.getByText('Escribe tu mensaje.')).toBeTruthy();
   });
 
-  it('mantiene los campos controlados y confirma un envío válido', () => {
+  it('mantiene los campos controlados y confirma un envío válido', async () => {
     renderApp('/contacto');
 
     fireEvent.change(screen.getByLabelText('Nombre'), { target: { value: 'Ana Pérez' } });
@@ -136,11 +233,11 @@ describe('páginas públicas', () => {
     fireEvent.change(screen.getByLabelText('Mensaje'), { target: { value: 'Necesito una consulta.' } });
     fireEvent.click(screen.getByRole('button', { name: 'Enviar consulta' }));
 
-    expect((screen.getByLabelText('Nombre') as HTMLInputElement).value).toBe('Ana Pérez');
-    expect(screen.getByRole('status').textContent).toMatch(/tu consulta está lista/i);
+    expect((await screen.findByRole('status')).textContent).toMatch(/tu consulta fue enviada/i);
+    expect(fetch).toHaveBeenCalledWith('http://localhost:8082/api/contactos', expect.objectContaining({ method: 'POST' }));
   });
 
-  it('permite registrarse, ver y actualizar los datos de la cuenta', () => {
+  it('permite registrarse, ver y actualizar los datos de la cuenta', async () => {
     renderApp('/registro');
 
     fireEvent.change(screen.getByLabelText('Nombre'), { target: { value: 'Ana Pérez' } });
@@ -149,17 +246,16 @@ describe('páginas públicas', () => {
     fireEvent.change(screen.getByLabelText('Confirmar contraseña'), { target: { value: 'secreto1' } });
     fireEvent.click(screen.getByRole('button', { name: 'Crear cuenta' }));
 
-    expect(screen.getByRole('heading', { name: 'Mi cuenta' })).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: 'Mi cuenta' })).toBeTruthy();
     expect((screen.getByLabelText('Nombre') as HTMLInputElement).value).toBe('Ana Pérez');
 
     fireEvent.change(screen.getByLabelText('Nombre'), { target: { value: 'Ana Díaz' } });
     fireEvent.click(screen.getByRole('button', { name: 'Guardar cambios' }));
-    expect(screen.getByRole('status').textContent).toMatch(/actualizaron correctamente/i);
-    const usuarios = JSON.parse(localStorage.getItem('usuarios_vet') ?? '[]');
-    expect(usuarios.find((usuario: { correo: string }) => usuario.correo === 'ana@example.com').nombre).toBe('Ana Díaz');
+    expect((await screen.findByRole('status')).textContent).toMatch(/actualizaron correctamente/i);
+    expect(backend.estado.usuarios.find((usuario) => usuario.correo === 'ana@example.com')?.nombre).toBe('Ana Díaz');
   });
 
-  it('permite cerrar sesión e iniciar sesión con la cuenta registrada', () => {
+  it('permite cerrar sesión e iniciar sesión con la cuenta registrada', async () => {
     renderApp('/registro');
 
     fireEvent.change(screen.getByLabelText('Nombre'), { target: { value: 'Ana Pérez' } });
@@ -167,17 +263,18 @@ describe('páginas públicas', () => {
     fireEvent.change(screen.getByLabelText('Contraseña'), { target: { value: 'secreto1' } });
     fireEvent.change(screen.getByLabelText('Confirmar contraseña'), { target: { value: 'secreto1' } });
     fireEvent.click(screen.getByRole('button', { name: 'Crear cuenta' }));
-    fireEvent.click(screen.getAllByRole('button', { name: 'Cerrar sesión' })[0]);
+    fireEvent.click((await screen.findAllByRole('button', { name: 'Cerrar sesión' }))[0]);
     fireEvent.click(screen.getByRole('link', { name: 'Iniciar sesión' }));
 
     fireEvent.change(screen.getByLabelText('Correo Electrónico'), { target: { value: 'ana@example.com' } });
     fireEvent.change(screen.getByLabelText('Contraseña'), { target: { value: 'secreto1' } });
     fireEvent.click(screen.getByRole('button', { name: 'Iniciar sesión' }));
 
-    expect(screen.getByRole('heading', { name: /cuidamos de quienes hacen tu vida mejor/i })).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: /cuidamos de quienes hacen tu vida mejor/i })).toBeTruthy();
+    expect(localStorage.getItem('token_vet')).not.toBeNull();
   });
 
-  it('redirige al administrador a su panel y permite gestionar cuentas', () => {
+  it('redirige al administrador a su panel y permite gestionar cuentas', async () => {
     renderApp('/login');
 
     fireEvent.change(screen.getByLabelText('Correo Electrónico'), {
@@ -188,30 +285,27 @@ describe('páginas públicas', () => {
     });
     fireEvent.click(screen.getByRole('button', { name: 'Iniciar sesión' }));
 
-    expect(screen.getByRole('heading', { name: /cuidamos de quienes hacen tu vida mejor/i })).toBeTruthy();
-    fireEvent.click(screen.getByRole('link', { name: 'Administración' }));
+    expect(await screen.findByRole('heading', { name: /cuidamos de quienes hacen tu vida mejor/i })).toBeTruthy();
+    fireEvent.click(await screen.findByRole('link', { name: 'Administración' }));
     expect(screen.getByRole('heading', { name: /panel de administración: servicios/i })).toBeTruthy();
     fireEvent.click(screen.getByRole('link', { name: 'Administrar usuarios' }));
     expect(screen.getByRole('heading', { name: /panel de administración: usuarios/i })).toBeTruthy();
+    expect(await screen.findByRole('row', { name: /maría garcía/i })).toBeTruthy();
 
     fireEvent.change(screen.getByLabelText('Nombre'), { target: { value: 'Cliente Nuevo' } });
     fireEvent.change(screen.getByLabelText('Correo electrónico'), { target: { value: 'cliente@example.com' } });
     fireEvent.change(screen.getByLabelText('Contraseña'), { target: { value: 'secreto1' } });
     fireEvent.click(screen.getByRole('button', { name: 'Crear cuenta' }));
 
-    const filaCuenta = screen.getByRole('row', { name: /cliente nuevo cliente@example.com usuario/i });
-    expect(filaCuenta).toBeTruthy();
-    const cuentaCreada = JSON.parse(localStorage.getItem('usuarios_vet') ?? '[]')
-      .find((usuario: { correo: string }) => usuario.correo === 'cliente@example.com');
-    expect(cuentaCreada.admin).toBe(false);
+    const filaCuenta = await screen.findByRole('row', { name: /cliente nuevo cliente@example.com usuario/i });
+    expect(backend.estado.usuarios.find((usuario) => usuario.correo === 'cliente@example.com')?.admin).toBe(false);
 
     fireEvent.click(within(filaCuenta).getByRole('button', { name: 'Editar' }));
     fireEvent.click(screen.getByLabelText('Conceder permisos de administrador'));
     fireEvent.click(screen.getByRole('button', { name: 'Guardar cambios' }));
 
-    const cuentaActualizada = JSON.parse(localStorage.getItem('usuarios_vet') ?? '[]')
-      .find((usuario: { correo: string }) => usuario.correo === 'cliente@example.com');
-    expect(cuentaActualizada.admin).toBe(true);
+    expect(await screen.findByRole('row', { name: /cliente nuevo cliente@example.com administrador/i })).toBeTruthy();
+    expect(backend.estado.usuarios.find((usuario) => usuario.correo === 'cliente@example.com')?.admin).toBe(true);
   });
 
   it('no permite entrar al panel administrativo sin iniciar sesión', () => {
@@ -308,7 +402,7 @@ describe('páginas públicas', () => {
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   */
 
-  it('16. rechaza el inicio de sesión con credenciales incorrectas', () => {
+  it('16. rechaza el inicio de sesión con credenciales incorrectas', async () => {
     renderApp('/login');
 
     fireEvent.change(screen.getByLabelText('Correo Electrónico'), {
@@ -317,9 +411,9 @@ describe('páginas públicas', () => {
     fireEvent.change(screen.getByLabelText('Contraseña'), { target: { value: 'incorrecta' } });
     fireEvent.click(screen.getByRole('button', { name: 'Iniciar sesión' }));
 
-    expect(screen.getByRole('alert').textContent).toBe('Correo o contraseña incorrectos.');
+    expect((await screen.findByRole('alert')).textContent).toBe('Correo o contraseña incorrectos.');
     expect(screen.getByRole('heading', { name: 'Login' })).toBeTruthy();
-    expect(localStorage.getItem('sesion_vet')).toBeNull();
+    expect(localStorage.getItem('token_vet')).toBeNull();
   });
 
   it('17. rechaza el registro cuando las contraseñas no coinciden', () => {
@@ -332,29 +426,21 @@ describe('páginas públicas', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Crear cuenta' }));
 
     expect(screen.getByRole('alert').textContent).toBe('Las contraseñas no coinciden.');
-    expect(JSON.parse(localStorage.getItem('usuarios_vet') ?? '[]'))
-      .not.toEqual(expect.arrayContaining([expect.objectContaining({ correo: 'ana@example.com' })]));
-    expect(localStorage.getItem('sesion_vet')).toBeNull();
+    expect(backend.estado.usuarios.some((usuario) => usuario.correo === 'ana@example.com')).toBe(false);
+    expect(localStorage.getItem('token_vet')).toBeNull();
   });
 
-  it('18. redirige a la cuenta a los usuarios sin permisos de administrador', () => {
-    localStorage.setItem('usuarios_vet', JSON.stringify([{
-      id: 'cliente-1',
-      nombre: 'Ana Pérez',
-      correo: 'ana@example.com',
-      contrasena: 'secreto1',
-      admin: false,
-    }]));
-    localStorage.setItem('sesion_vet', 'cliente-1');
+  it('18. redirige a la cuenta a los usuarios sin permisos de administrador', async () => {
+    localStorage.setItem('token_vet', 'token-2');
     renderApp('/admin/servicios');
 
-    expect(screen.getByRole('heading', { name: 'Mi cuenta' })).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: 'Mi cuenta' })).toBeTruthy();
     expect(screen.queryByRole('heading', { name: /panel de administración: servicios/i })).toBeNull();
   });
 
-  it('19. permite al administrador editar un servicio existente', () => {
+  it('19. permite al administrador editar un servicio existente', async () => {
     renderApp();
-    iniciarSesionComoAdmin();
+    await iniciarSesionComoAdmin();
 
     const filaServicio = screen.getByRole('row', { name: /Esterilización de mascotas/i });
     fireEvent.click(within(filaServicio).getByRole('button', { name: 'Editar' }));
@@ -369,9 +455,9 @@ describe('páginas públicas', () => {
     expect(servicios.find((servicio: { id: number }) => servicio.id === 1).precio).toBe(35000);
   });
 
-  it('20. permite al administrador eliminar un servicio después de confirmar', () => {
+  it('20. permite al administrador eliminar un servicio después de confirmar', async () => {
     renderApp();
-    iniciarSesionComoAdmin();
+    await iniciarSesionComoAdmin();
 
     const filaServicio = screen.getByRole('row', { name: /Perruquería/i });
     const confirmOriginal = window.confirm;
@@ -387,36 +473,18 @@ describe('páginas públicas', () => {
     expect(servicios.some((servicio: { id: number }) => servicio.id === 2)).toBe(false);
   });
 
-  it('21. permite iniciar sesión con el segundo usuario ficticio si no estaba en los datos guardados', () => {
-    localStorage.setItem('usuarios_vet', JSON.stringify([
-      {
-        id: 'cliente-guardado',
-        nombre: 'Cliente Guardado',
-        correo: 'cliente@example.com',
-        contrasena: 'clavecliente',
-        admin: false,
-      },
-    ]));
-    renderApp('/login');
+  it('21. mantiene la sesión al recargar la página si hay un token guardado', async () => {
+    localStorage.setItem('token_vet', 'token-1');
+    renderApp('/admin/servicios');
 
-    fireEvent.change(screen.getByLabelText('Correo Electrónico'), {
-      target: { value: 'maria.garcia@example.com' },
-    });
-    fireEvent.change(screen.getByLabelText('Contraseña'), { target: { value: 'contrasena123' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Iniciar sesión' }));
+    expect(await screen.findByRole('heading', { name: /panel de administración: servicios/i })).toBeTruthy();
+  });
 
-    expect(screen.getByRole('heading', { name: /cuidamos de quienes hacen tu vida mejor/i })).toBeTruthy();
-    const usuarios = JSON.parse(localStorage.getItem('usuarios_vet') ?? '[]');
-    expect(usuarios).toEqual(expect.arrayContaining([
-      expect.objectContaining({
-        correo: 'maria.garcia@example.com',
-        contrasena: 'contrasena123',
-        admin: false,
-      }),
-      expect.objectContaining({
-        correo: 'cliente@example.com',
-        contrasena: 'clavecliente',
-      }),
-    ]));
+  it('22. cierra la sesión si el token guardado ya no es válido', async () => {
+    localStorage.setItem('token_vet', 'token-invalido');
+    renderApp('/usuario');
+
+    expect(await screen.findByRole('heading', { name: 'Login' })).toBeTruthy();
+    expect(localStorage.getItem('token_vet')).toBeNull();
   });
 });

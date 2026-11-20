@@ -1,5 +1,6 @@
 package cl.vet.Micro_Usuario.controller;
 
+import cl.vet.Micro_Usuario.dto.ActualizarPerfilRequest;
 import cl.vet.Micro_Usuario.dto.AuthResponse;
 import cl.vet.Micro_Usuario.dto.LoginRequest;
 import cl.vet.Micro_Usuario.dto.RegistroRequest;
@@ -37,5 +38,16 @@ public class AuthController {
     @GetMapping("/perfil")
     public UsuarioResponse perfil(@AuthenticationPrincipal Jwt jwt) {
         return service.obtenerPerfil(Long.valueOf(jwt.getSubject()));
+    }
+
+    @PutMapping("/perfil")
+    public AuthResponse actualizarPerfil(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody ActualizarPerfilRequest datos) {
+        return service.actualizarPerfil(Long.valueOf(jwt.getSubject()), datos);
+    }
+
+    @DeleteMapping("/perfil")
+    public ResponseEntity<Void> eliminarCuenta(@AuthenticationPrincipal Jwt jwt) {
+        service.eliminarCuenta(Long.valueOf(jwt.getSubject()));
+        return ResponseEntity.noContent().build();
     }
 }

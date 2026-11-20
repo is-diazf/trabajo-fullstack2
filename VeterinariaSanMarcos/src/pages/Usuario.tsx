@@ -3,18 +3,25 @@ import { useState, type FormEvent } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import CampoFormulario from '../componentes/molecules/CampoFormulario';
 import { useSesion } from '../context/SesionContexto';
+import type { DatosUsuario } from '../data/UsuarioData';
 
 function Usuario() {
-  const { usuario, actualizarUsuario, eliminarCuenta, cerrarSesion } = useSesion();
+  const { usuario, cargando } = useSesion();
+
+  if (cargando) return null;
+  if (!usuario) return <Navigate to="/login" replace />;
+  return <PanelCuenta usuario={usuario} />;
+}
+
+function PanelCuenta({ usuario }: { usuario: DatosUsuario }) {
+  const { actualizarUsuario, eliminarCuenta, cerrarSesion } = useSesion();
   const navegar = useNavigate();
-  const [nombre, setNombre] = useState(usuario?.nombre ?? '');
-  const [correo, setCorreo] = useState(usuario?.correo ?? '');
+  const [nombre, setNombre] = useState(usuario.nombre);
+  const [correo, setCorreo] = useState(usuario.correo);
   const [mensaje, setMensaje] = useState('');
   const [error, setError] = useState('');
 
-  if (!usuario) return <Navigate to="/login" replace />;
-
-  const manejarActualizacion = (e: FormEvent<HTMLFormElement>) => {
+  const manejarActualizacion = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!nombre.trim() || !correo.trim()) {
       setError('El nombre y el correo son obligatorios.');
@@ -26,7 +33,7 @@ function Usuario() {
       setMensaje('');
       return;
     }
-    const resultado = actualizarUsuario(nombre, correo);
+    const resultado = await actualizarUsuario(nombre, correo);
     if (!resultado.correcto) {
       setError(resultado.mensaje);
       setMensaje('');
@@ -36,9 +43,9 @@ function Usuario() {
     setMensaje('Tus datos se actualizaron correctamente.');
   };
 
-  const manejarEliminacion = () => {
+  const manejarEliminacion = async () => {
     if (!window.confirm('¿Seguro que quieres eliminar tu cuenta? Esta acción no se puede deshacer.')) return;
-    const resultado = eliminarCuenta();
+    const resultado = await eliminarCuenta();
     if (!resultado.correcto) {
       setError(resultado.mensaje);
       return;

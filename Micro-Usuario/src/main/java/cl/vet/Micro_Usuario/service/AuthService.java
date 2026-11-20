@@ -1,5 +1,6 @@
 package cl.vet.Micro_Usuario.service;
 
+import cl.vet.Micro_Usuario.dto.ActualizarPerfilRequest;
 import cl.vet.Micro_Usuario.dto.AuthResponse;
 import cl.vet.Micro_Usuario.dto.LoginRequest;
 import cl.vet.Micro_Usuario.dto.RegistroRequest;
@@ -50,8 +51,32 @@ public class AuthService {
     }
 
     public UsuarioResponse obtenerPerfil(Long id) {
+        return UsuarioResponse.desde(buscar(id));
+    }
+
+    public AuthResponse actualizarPerfil(Long id, ActualizarPerfilRequest datos) {
+        Usuario usuario = buscar(id);
+        String correo = normalizarCorreo(datos.correo());
+        if (repository.existsByCorreoAndIdNot(correo, id)) {
+            throw new ErrorApi(HttpStatus.CONFLICT, "Ese correo ya está asociado a otra cuenta.");
+        }
+
+        usuario.setNombre(datos.nombre().trim());
+        usuario.setCorreo(correo);
+        Usuario guardado = repository.save(usuario);
+        return new AuthResponse(tokenService.generarToken(guardado), UsuarioResponse.desde(guardado));
+    }
+
+    public void eliminarCuenta(Long id) {
+        Usuario usuario = buscar(id);
+        if (usuario.isAdmin() && repository.countByAdminTrue() == 1) {
+            throw new ErrorApi(HttpStatus.CONFLICT, "No puedes eliminar la única cuenta administradora.");
+        }
+        repository.delete(usuario);
+    }
+
+    private Usuario buscar(Long id) {
         return repository.findById(id)
-                .map(UsuarioResponse::desde)
                 .orElseThrow(() -> new ErrorApi(HttpStatus.NOT_FOUND, "No se encontró la cuenta."));
     }
 
