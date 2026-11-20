@@ -1,0 +1,450 @@
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { MemoryRouter } from 'react-router-dom';
+import App from '../App';
+import { SesionProvider } from '../context/SesionContexto';
+import { ServiciosProvider } from '../context/ServiciosContexto';
+import { NovedadesProvider } from '../context/NovedadesContexto';
+import { CarritoProvider } from '../context/CarritoContexto';
+
+afterEach(cleanup);
+beforeEach(() => localStorage.clear());
+
+function renderApp(initialEntry = '/') {
+  return render(
+    <MemoryRouter initialEntries={[initialEntry]}>
+      <ServiciosProvider>
+        <SesionProvider>
+          <CarritoProvider>
+            <NovedadesProvider>
+              <App />
+            </NovedadesProvider>
+          </CarritoProvider>
+        </SesionProvider>
+      </ServiciosProvider>
+    </MemoryRouter>,
+  );
+}
+
+describe('páginas públicas', () => {
+  it('permite comprar productos y consultar la compra desde el perfil', () => {
+    renderApp('/productos');
+
+    expect(screen.getByRole('heading', { name: 'Productos para cuidar y consentir' })).toBeTruthy();
+    expect(screen.getAllByRole('link', { name: 'Inicia sesión para comprar' })).toHaveLength(4);
+
+    iniciarSesionComoUsuario();
+    fireEvent.click(screen.getByRole('link', { name: 'Productos' }));
+    fireEvent.click(screen.getAllByRole('button', { name: 'Agregar al carrito' })[0]);
+    fireEvent.click(screen.getByRole('link', { name: 'Carrito (1)' }));
+
+    expect(screen.getByRole('heading', { name: 'Mi carrito' })).toBeTruthy();
+    expect(screen.getAllByText('$8.990')).toHaveLength(3);
+    fireEvent.click(screen.getByRole('button', { name: 'Finalizar compra' }));
+    expect(screen.getByRole('status').textContent).toMatch(/compra registrada en tu historial/i);
+    fireEvent.click(screen.getByRole('link', { name: 'Mi cuenta' }));
+    fireEvent.click(screen.getByRole('link', { name: 'Historial de compras' }));
+
+    expect(screen.getByRole('heading', { name: 'Historial de compras' })).toBeTruthy();
+    expect(screen.getByText(/Juguete interactivo × 1/)).toBeTruthy();
+    expect(screen.getByText('Total: $8.990')).toBeTruthy();
+    expect(JSON.parse(localStorage.getItem('carritos_vet') ?? '{}')['2']).toEqual([]);
+    expect(JSON.parse(localStorage.getItem('historial_compras_vet') ?? '{}')['2']).toHaveLength(1);
+  });
+
+  it('muestra las novedades iniciales aunque el navegador guardara una lista vacía', () => {
+    localStorage.setItem('novedades_vet', '[]');
+    renderApp('/novedades');
+
+    expect(screen.getByRole('heading', { name: 'Novedades' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Nueva campaña de vacunación' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Horario extendido los sábados' })).toBeTruthy();
+  });
+
+  it('muestra Inicio con la navegación y el footer compartidos', () => {
+    renderApp();
+
+    expect(screen.getByRole('heading', { name: /cuidamos de quienes hacen tu vida mejor/i })).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Quiénes somos' })).toBeTruthy();
+    expect(screen.getByText(/todos los derechos reservados/i)).toBeTruthy();
+  });
+
+  it('muestra la página Quiénes somos', () => {
+    renderApp('/info');
+
+    expect(screen.getByRole('heading', { name: /cuidado veterinario con trato cercano/i })).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Conversemos' })).toBeTruthy();
+  });
+
+  it('permite navegar desde Inicio a Contacto', () => {
+    renderApp();
+
+    fireEvent.click(screen.getByRole('link', { name: /hablemos de tu mascota/i }));
+
+    expect(screen.getByRole('heading', { name: /cuéntanos cómo podemos cuidar mejor/i })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Envíanos tu consulta' })).toBeTruthy();
+  });
+
+  it('abre y cierra el formulario de agenda desde el navbar', () => {
+    renderApp();
+
+    expect(screen.queryByRole('button', { name: 'Agendar hora' })).toBeNull();
+    iniciarSesionComoUsuario();
+    expect(screen.getByRole('link', { name: 'Mi cuenta' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Agendar hora' }));
+    expect(screen.getByRole('dialog', { name: 'Agendar una hora' })).toBeTruthy();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Cerrar' }));
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('valida y confirma el formulario de agenda', () => {
+    renderApp();
+
+    iniciarSesionComoUsuario();
+    fireEvent.click(screen.getByRole('button', { name: 'Agendar hora' }));
+    fireEvent.change(screen.getByLabelText('Tu nombre'), { target: { value: 'Ana Pérez' } });
+    fireEvent.change(screen.getByLabelText('Correo electrónico'), { target: { value: 'ana@example.com' } });
+    fireEvent.change(screen.getByLabelText('Nombre de tu mascota'), { target: { value: 'Luna' } });
+    fireEvent.change(screen.getByLabelText('Servicio'), { target: { value: 'Perruquería' } });
+    fireEvent.change(screen.getByLabelText('Fecha'), { target: { value: '2027-01-15' } });
+    fireEvent.change(screen.getByLabelText('Hora'), { target: { value: '10:30' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Solicitar hora' }));
+
+    expect(screen.getByRole('status').textContent).toMatch(/confirmar disponibilidad/i);
+  });
+
+  function iniciarSesionComoAdmin() {
+    fireEvent.click(screen.getByRole('link', { name: 'Iniciar sesión' }));
+    fireEvent.change(screen.getByLabelText('Correo Electrónico'), {
+      target: { value: 'admin.admin@admin.admin' },
+    });
+    fireEvent.change(screen.getByLabelText('Contraseña'), {
+      target: { value: 'increibleclavesupersegura' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Iniciar sesión' }));
+    fireEvent.click(screen.getByRole('link', { name: 'Administración' }));
+  }
+
+  function iniciarSesionComoUsuario() {
+    fireEvent.click(screen.getByRole('link', { name: 'Iniciar sesión' }));
+    fireEvent.change(screen.getByLabelText('Correo Electrónico'), {
+      target: { value: 'maria.garcia@example.com' },
+    });
+    fireEvent.change(screen.getByLabelText('Contraseña'), {
+      target: { value: 'contrasena123' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Iniciar sesión' }));
+  }
+
+  it('muestra solo el acceso de administración a los administradores', () => {
+    renderApp();
+    iniciarSesionComoAdmin();
+
+    expect(screen.getByRole('link', { name: 'Administración' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Agendar hora' })).toBeNull();
+    expect(screen.queryByRole('link', { name: 'Mi cuenta' })).toBeNull();
+  });
+
+  it('muestra los errores de validación del formulario de contacto', () => {
+    renderApp('/contacto');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Enviar consulta' }));
+
+    expect(screen.getByText('Ingresa tu nombre.')).toBeTruthy();
+    expect(screen.getByText('Ingresa tu correo electrónico.')).toBeTruthy();
+    expect(screen.getByText('Escribe tu mensaje.')).toBeTruthy();
+  });
+
+  it('mantiene los campos controlados y confirma un envío válido', () => {
+    renderApp('/contacto');
+
+    fireEvent.change(screen.getByLabelText('Nombre'), { target: { value: 'Ana Pérez' } });
+    fireEvent.change(screen.getByLabelText('Correo electrónico'), { target: { value: 'ana@example.com' } });
+    fireEvent.change(screen.getByLabelText('Mensaje'), { target: { value: 'Necesito una consulta.' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Enviar consulta' }));
+
+    expect((screen.getByLabelText('Nombre') as HTMLInputElement).value).toBe('Ana Pérez');
+    expect(screen.getByRole('status').textContent).toMatch(/tu consulta está lista/i);
+  });
+
+  it('permite registrarse, ver y actualizar los datos de la cuenta', () => {
+    renderApp('/registro');
+
+    fireEvent.change(screen.getByLabelText('Nombre'), { target: { value: 'Ana Pérez' } });
+    fireEvent.change(screen.getByLabelText('Correo electrónico'), { target: { value: 'ana@example.com' } });
+    fireEvent.change(screen.getByLabelText('Contraseña'), { target: { value: 'secreto1' } });
+    fireEvent.change(screen.getByLabelText('Confirmar contraseña'), { target: { value: 'secreto1' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Crear cuenta' }));
+
+    expect(screen.getByRole('heading', { name: 'Mi cuenta' })).toBeTruthy();
+    expect((screen.getByLabelText('Nombre') as HTMLInputElement).value).toBe('Ana Pérez');
+
+    fireEvent.change(screen.getByLabelText('Nombre'), { target: { value: 'Ana Díaz' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Guardar cambios' }));
+    expect(screen.getByRole('status').textContent).toMatch(/actualizaron correctamente/i);
+    const usuarios = JSON.parse(localStorage.getItem('usuarios_vet') ?? '[]');
+    expect(usuarios.find((usuario: { correo: string }) => usuario.correo === 'ana@example.com').nombre).toBe('Ana Díaz');
+  });
+
+  it('permite cerrar sesión e iniciar sesión con la cuenta registrada', () => {
+    renderApp('/registro');
+
+    fireEvent.change(screen.getByLabelText('Nombre'), { target: { value: 'Ana Pérez' } });
+    fireEvent.change(screen.getByLabelText('Correo electrónico'), { target: { value: 'ana@example.com' } });
+    fireEvent.change(screen.getByLabelText('Contraseña'), { target: { value: 'secreto1' } });
+    fireEvent.change(screen.getByLabelText('Confirmar contraseña'), { target: { value: 'secreto1' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Crear cuenta' }));
+    fireEvent.click(screen.getAllByRole('button', { name: 'Cerrar sesión' })[0]);
+    fireEvent.click(screen.getByRole('link', { name: 'Iniciar sesión' }));
+
+    fireEvent.change(screen.getByLabelText('Correo Electrónico'), { target: { value: 'ana@example.com' } });
+    fireEvent.change(screen.getByLabelText('Contraseña'), { target: { value: 'secreto1' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Iniciar sesión' }));
+
+    expect(screen.getByRole('heading', { name: /cuidamos de quienes hacen tu vida mejor/i })).toBeTruthy();
+  });
+
+  it('redirige al administrador a su panel y permite gestionar cuentas', () => {
+    renderApp('/login');
+
+    fireEvent.change(screen.getByLabelText('Correo Electrónico'), {
+      target: { value: 'admin.admin@admin.admin' },
+    });
+    fireEvent.change(screen.getByLabelText('Contraseña'), {
+      target: { value: 'increibleclavesupersegura' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Iniciar sesión' }));
+
+    expect(screen.getByRole('heading', { name: /cuidamos de quienes hacen tu vida mejor/i })).toBeTruthy();
+    fireEvent.click(screen.getByRole('link', { name: 'Administración' }));
+    expect(screen.getByRole('heading', { name: /panel de administración: servicios/i })).toBeTruthy();
+    fireEvent.click(screen.getByRole('link', { name: 'Administrar usuarios' }));
+    expect(screen.getByRole('heading', { name: /panel de administración: usuarios/i })).toBeTruthy();
+
+    fireEvent.change(screen.getByLabelText('Nombre'), { target: { value: 'Cliente Nuevo' } });
+    fireEvent.change(screen.getByLabelText('Correo electrónico'), { target: { value: 'cliente@example.com' } });
+    fireEvent.change(screen.getByLabelText('Contraseña'), { target: { value: 'secreto1' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Crear cuenta' }));
+
+    const filaCuenta = screen.getByRole('row', { name: /cliente nuevo cliente@example.com usuario/i });
+    expect(filaCuenta).toBeTruthy();
+    const cuentaCreada = JSON.parse(localStorage.getItem('usuarios_vet') ?? '[]')
+      .find((usuario: { correo: string }) => usuario.correo === 'cliente@example.com');
+    expect(cuentaCreada.admin).toBe(false);
+
+    fireEvent.click(within(filaCuenta).getByRole('button', { name: 'Editar' }));
+    fireEvent.click(screen.getByLabelText('Conceder permisos de administrador'));
+    fireEvent.click(screen.getByRole('button', { name: 'Guardar cambios' }));
+
+    const cuentaActualizada = JSON.parse(localStorage.getItem('usuarios_vet') ?? '[]')
+      .find((usuario: { correo: string }) => usuario.correo === 'cliente@example.com');
+    expect(cuentaActualizada.admin).toBe(true);
+  });
+
+  it('no permite entrar al panel administrativo sin iniciar sesión', () => {
+    renderApp('/admin/servicios');
+
+    expect(screen.getByRole('heading', { name: 'Login' })).toBeTruthy();
+  });
+    // ==========================================
+  // PRUEBAS DE ISRAEL (PERSONA 2)
+  // ==========================================
+
+  it('11. debe mostrar el listado de servicios y permitir filtrarlos', () => {
+    renderApp('/servicios');
+
+    // Verificamos que los servicios iniciales estén
+    expect(screen.getByRole('heading', { name: 'Esterilización de mascotas' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Perruquería' })).toBeTruthy();
+
+    // Usamos el buscador
+    const buscador = screen.getByPlaceholderText(/Buscar servicio/i);
+    fireEvent.change(buscador, { target: { value: 'baño' } });
+
+    // La perruquería se queda, la esterilización desaparece
+    expect(screen.getByRole('heading', { name: 'Perruquería' })).toBeTruthy();
+    expect(screen.queryByRole('heading', { name: 'Esterilización de mascotas' })).toBeNull();
+  });
+
+  it('12. debe mostrar el detalle de un servicio específico', () => {
+    renderApp('/servicios/1');
+
+    expect(screen.getByRole('heading', { name: 'Esterilización de mascotas' })).toBeTruthy();
+    expect(screen.getByText(/incluye anestesia y recuperación/i)).toBeTruthy();
+    expect(screen.getByText(/30.000/)).toBeTruthy(); // Verifica el precio
+  });
+
+  it('13. debe mostrar el detalle de una novedad específica', () => {
+    renderApp('/novedades/1');
+
+    expect(screen.getByRole('heading', { name: 'Nueva campaña de vacunación' })).toBeTruthy();
+    expect(screen.getByText(/Durante todo el mes de mayo/i)).toBeTruthy();
+  });
+
+  it('14. el admin puede crear un nuevo servicio desde el panel', () => {
+    // 1. Iniciamos sesión como admin
+    renderApp('/login');
+    fireEvent.change(screen.getByLabelText('Correo Electrónico'), { target: { value: 'admin.admin@admin.admin' } });
+    fireEvent.change(screen.getByLabelText('Contraseña'), { target: { value: 'increibleclavesupersegura' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Iniciar sesión' }));
+    fireEvent.click(screen.getByRole('link', { name: 'Administración' }));
+
+    // 2. Llenamos el formulario de crear servicio
+    fireEvent.change(screen.getByLabelText('Título'), { target: { value: 'Nuevo Servicio Test' } });
+    fireEvent.change(screen.getByLabelText('Descripción'), { target: { value: 'Descripción de prueba' } });
+    fireEvent.change(screen.getByLabelText('Precio ($)'), { target: { value: '15000' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Guardar Servicio' }));
+
+    // 3. Verificamos que aparezca en la tabla
+    expect(screen.getByRole('cell', { name: 'Nuevo Servicio Test' })).toBeTruthy();
+  });
+
+  it('15. el admin puede editar y eliminar una novedad', () => {
+    // 1. Iniciamos sesión como admin y vamos a novedades
+    renderApp('/login');
+    fireEvent.change(screen.getByLabelText('Correo Electrónico'), { target: { value: 'admin.admin@admin.admin' } });
+    fireEvent.change(screen.getByLabelText('Contraseña'), { target: { value: 'increibleclavesupersegura' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Iniciar sesión' }));
+    
+    // Navegamos a la gestión de novedades (asumiendo que el link está ahí)
+    fireEvent.click(screen.getByRole('link', { name: 'Administrar novedades' })); 
+
+    // 2. Probamos EDITAR
+    const filaNovedad = screen.getByRole('row', { name: /Nueva campaña de vacunación/i });
+    fireEvent.click(within(filaNovedad).getByRole('button', { name: 'Editar' }));
+    
+    fireEvent.change(screen.getByLabelText('Título'), { target: { value: 'Título Editado' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Guardar Cambios' }));
+    expect(screen.getByRole('cell', { name: 'Título Editado' })).toBeTruthy();
+
+    // 3. Probamos ELIMINAR
+    // Mockeamos el window.confirm para que devuelva true automáticamente
+    window.confirm = () => true;
+    const filaEditada = screen.getByRole('row', { name: /Título Editado/i });
+    fireEvent.click(within(filaEditada).getByRole('button', { name: 'Eliminar' }));
+
+    // Verificamos que ya no esté en la tabla
+    expect(screen.queryByRole('cell', { name: 'Título Editado' })).toBeNull();
+  });
+
+   /*
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Felipito pruebas (persona 3) - pruebas de login, registro, permisos y gestión de servicios
+
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  */
+
+  it('16. rechaza el inicio de sesión con credenciales incorrectas', () => {
+    renderApp('/login');
+
+    fireEvent.change(screen.getByLabelText('Correo Electrónico'), {
+      target: { value: 'desconocido@example.com' },
+    });
+    fireEvent.change(screen.getByLabelText('Contraseña'), { target: { value: 'incorrecta' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Iniciar sesión' }));
+
+    expect(screen.getByRole('alert').textContent).toBe('Correo o contraseña incorrectos.');
+    expect(screen.getByRole('heading', { name: 'Login' })).toBeTruthy();
+    expect(localStorage.getItem('sesion_vet')).toBeNull();
+  });
+
+  it('17. rechaza el registro cuando las contraseñas no coinciden', () => {
+    renderApp('/registro');
+
+    fireEvent.change(screen.getByLabelText('Nombre'), { target: { value: 'Ana Pérez' } });
+    fireEvent.change(screen.getByLabelText('Correo electrónico'), { target: { value: 'ana@example.com' } });
+    fireEvent.change(screen.getByLabelText('Contraseña'), { target: { value: 'secreto1' } });
+    fireEvent.change(screen.getByLabelText('Confirmar contraseña'), { target: { value: 'secreto2' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Crear cuenta' }));
+
+    expect(screen.getByRole('alert').textContent).toBe('Las contraseñas no coinciden.');
+    expect(JSON.parse(localStorage.getItem('usuarios_vet') ?? '[]'))
+      .not.toEqual(expect.arrayContaining([expect.objectContaining({ correo: 'ana@example.com' })]));
+    expect(localStorage.getItem('sesion_vet')).toBeNull();
+  });
+
+  it('18. redirige a la cuenta a los usuarios sin permisos de administrador', () => {
+    localStorage.setItem('usuarios_vet', JSON.stringify([{
+      id: 'cliente-1',
+      nombre: 'Ana Pérez',
+      correo: 'ana@example.com',
+      contrasena: 'secreto1',
+      admin: false,
+    }]));
+    localStorage.setItem('sesion_vet', 'cliente-1');
+    renderApp('/admin/servicios');
+
+    expect(screen.getByRole('heading', { name: 'Mi cuenta' })).toBeTruthy();
+    expect(screen.queryByRole('heading', { name: /panel de administración: servicios/i })).toBeNull();
+  });
+
+  it('19. permite al administrador editar un servicio existente', () => {
+    renderApp();
+    iniciarSesionComoAdmin();
+
+    const filaServicio = screen.getByRole('row', { name: /Esterilización de mascotas/i });
+    fireEvent.click(within(filaServicio).getByRole('button', { name: 'Editar' }));
+    fireEvent.change(screen.getByDisplayValue('Esterilización de mascotas'), {
+      target: { value: 'Esterilización actualizada' },
+    });
+    fireEvent.change(screen.getByDisplayValue('30000'), { target: { value: '35000' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Actualizar Servicio' }));
+
+    expect(screen.getByRole('cell', { name: 'Esterilización actualizada' })).toBeTruthy();
+    const servicios = JSON.parse(localStorage.getItem('servicios_vet') ?? '[]');
+    expect(servicios.find((servicio: { id: number }) => servicio.id === 1).precio).toBe(35000);
+  });
+
+  it('20. permite al administrador eliminar un servicio después de confirmar', () => {
+    renderApp();
+    iniciarSesionComoAdmin();
+
+    const filaServicio = screen.getByRole('row', { name: /Perruquería/i });
+    const confirmOriginal = window.confirm;
+    window.confirm = () => true;
+    try {
+      fireEvent.click(within(filaServicio).getByRole('button', { name: 'Eliminar' }));
+    } finally {
+      window.confirm = confirmOriginal;
+    }
+
+    expect(screen.queryByRole('row', { name: /Perruquería/i })).toBeNull();
+    const servicios = JSON.parse(localStorage.getItem('servicios_vet') ?? '[]');
+    expect(servicios.some((servicio: { id: number }) => servicio.id === 2)).toBe(false);
+  });
+
+  it('21. permite iniciar sesión con el segundo usuario ficticio si no estaba en los datos guardados', () => {
+    localStorage.setItem('usuarios_vet', JSON.stringify([
+      {
+        id: 'cliente-guardado',
+        nombre: 'Cliente Guardado',
+        correo: 'cliente@example.com',
+        contrasena: 'clavecliente',
+        admin: false,
+      },
+    ]));
+    renderApp('/login');
+
+    fireEvent.change(screen.getByLabelText('Correo Electrónico'), {
+      target: { value: 'maria.garcia@example.com' },
+    });
+    fireEvent.change(screen.getByLabelText('Contraseña'), { target: { value: 'contrasena123' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Iniciar sesión' }));
+
+    expect(screen.getByRole('heading', { name: /cuidamos de quienes hacen tu vida mejor/i })).toBeTruthy();
+    const usuarios = JSON.parse(localStorage.getItem('usuarios_vet') ?? '[]');
+    expect(usuarios).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        correo: 'maria.garcia@example.com',
+        contrasena: 'contrasena123',
+        admin: false,
+      }),
+      expect.objectContaining({
+        correo: 'cliente@example.com',
+        contrasena: 'clavecliente',
+      }),
+    ]));
+  });
+});

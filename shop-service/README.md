@@ -12,20 +12,20 @@ Requiere MySQL accesible. Configura estas variables de entorno antes de iniciar:
 - `SHOP_ADMIN_USERNAME` y `SHOP_ADMIN_PASSWORD`: credenciales requeridas para arrancar y proteger operaciones administrativas e historial.
 - `CORS_ALLOWED_ORIGINS`: por defecto `http://localhost:3000,http://localhost:5173`.
 
-En PowerShell, configura credenciales antes de iniciar:
+En PowerShell, desde la carpeta `shop-service`, configura credenciales antes de iniciar:
 
 ```powershell
 $env:DB_USERNAME = "shop_user"
 $env:DB_PASSWORD = "<clave-de-mysql>"
 $env:SHOP_ADMIN_USERNAME = "admin"
 $env:SHOP_ADMIN_PASSWORD = "<una-clave-segura>"
-.\mvnw.cmd -f shop-service\pom.xml spring-boot:run
+.\mvnw.cmd spring-boot:run
 ```
 
-Desde la raíz del workspace, ejecuta las pruebas con:
+Desde la carpeta `shop-service`, ejecuta las pruebas con:
 
 ```powershell
-.\mvnw.cmd -f shop-service\pom.xml clean test
+.\mvnw.cmd clean test
 ```
 
 ## API
