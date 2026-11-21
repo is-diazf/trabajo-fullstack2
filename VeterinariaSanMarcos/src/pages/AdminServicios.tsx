@@ -59,7 +59,6 @@ function AdminServicios() {
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h1 className="fw-bold text-success mb-0">Panel de Administración: Servicios</h1>
         <div className="d-flex gap-2">
-          <Link to="/admin/dashboard" className="btn btn-outline-secondary">← Panel General</Link>
           <Link to="/admin/usuarios" className="btn btn-outline-success">Administrar usuarios</Link>
           <Link to="/servicios" className="btn btn-outline-secondary">Ir a la vista pública</Link>
         </div>
@@ -75,20 +74,20 @@ function AdminServicios() {
               
               <form onSubmit={handleSubmit}>
                 <div className="mb-3">
-                  <label className="form-label fw-bold" htmlFor="servicio-titulo">Título</label>
-                  <input id="servicio-titulo" type="text" className="form-control" name="titulo" value={formData.titulo} onChange={handleChange} required />
+                  <label className="form-label fw-bold">Título</label>
+                  <input type="text" className="form-control" name="titulo" value={formData.titulo} onChange={handleChange} required />
                 </div>
                 <div className="mb-3">
-                  <label className="form-label fw-bold" htmlFor="servicio-descripcion">Descripción</label>
-                  <textarea id="servicio-descripcion" className="form-control" name="descripcion" rows={3} value={formData.descripcion} onChange={handleChange} required></textarea>
+                  <label className="form-label fw-bold">Descripción</label>
+                  <textarea className="form-control" name="descripcion" rows={3} value={formData.descripcion} onChange={handleChange} required></textarea>
                 </div>
                 <div className="mb-3">
-                  <label className="form-label fw-bold" htmlFor="servicio-precio">Precio ($)</label>
-                  <input id="servicio-precio" type="number" min="0" className="form-control" name="precio" value={formData.precio} onChange={handleChange} required />
+                  <label className="form-label fw-bold">Precio ($)</label>
+                  <input type="number" min="0" className="form-control" name="precio" value={formData.precio} onChange={handleChange} required />
                 </div>
                 <div className="mb-3">
-                  <label className="form-label fw-bold" htmlFor="servicio-imagen">URL de la Imagen</label>
-                  <input id="servicio-imagen" type="text" className="form-control" name="imagen" value={formData.imagen} onChange={handleChange} required />
+                  <label className="form-label fw-bold">URL de la Imagen</label>
+                  <input type="text" className="form-control" name="imagen" value={formData.imagen} onChange={handleChange} required />
                 </div>
                 
                 <button type="submit" className="btn btn-success w-100 fw-bold">

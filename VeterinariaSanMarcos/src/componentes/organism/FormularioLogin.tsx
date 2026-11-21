@@ -8,12 +8,15 @@ function FormularioLogin() {
     const [correo, setCorreo] = useState("");
     const [contrasena, setContrasena] = useState("");
     const [error, setError] = useState("");
+    const [enviando, setEnviando] = useState(false);
     const { iniciarSesion } = useSesion();
     const navegar = useNavigate();
 
-    const manejarEnvio = (e: FormEvent<HTMLFormElement>) => {
+    const manejarEnvio = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        const resultado = iniciarSesion(correo, contrasena);
+        setEnviando(true);
+        const resultado = await iniciarSesion(correo, contrasena);
+        setEnviando(false);
         if (!resultado.correcto) {
             setError(resultado.mensaje);
             return;
@@ -41,7 +44,7 @@ function FormularioLogin() {
                 alCambiar={setContrasena}
             />
 
-            <button type="submit" className="btn btn-primary">
+            <button type="submit" className="btn btn-primary" disabled={enviando}>
                 Iniciar sesión
             </button>
             <p className="mt-3 mb-0">

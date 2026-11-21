@@ -1,5 +1,7 @@
 import { useState } from 'react';
 
+import type { SubmitEvent } from 'react';
+
 type Errores = {
   nombre?: string;
   email?: string;
@@ -12,6 +14,8 @@ function FormularioContacto() {
   const [mensaje, setMensaje] = useState('');
   const [errores, setErrores] = useState<Errores>({});
   const [enviado, setEnviado] = useState(false);
+  const [enviando, setEnviando] = useState(false);
+  const [errorServidor, setErrorServidor] = useState('');
 
   const validar = (): Errores => {
     const nuevosErrores: Errores = {};
@@ -39,14 +43,40 @@ function FormularioContacto() {
     return nuevosErrores;
   };
 
-  const manejarEnvio = (e: React.FormEvent<HTMLFormElement>) => {
+  const manejarEnvio = async (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
+    
     const nuevosErrores = validar();
     setErrores(nuevosErrores);
     setEnviado(false);
+    setErrorServidor('');
 
-    if (Object.keys(nuevosErrores).length === 0) {
+    if (Object.keys(nuevosErrores).length > 0) return;
+
+    setEnviando(true);
+    try {
+      const respuesta = await fetch('http://localhost:8082/api/contactos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nombreCompleto: nombre.trim(),
+          correo: email.trim(),
+          mensaje: mensaje.trim(),
+        }),
+      });
+
+      if (!respuesta.ok) {
+        throw new Error(`Error ${respuesta.status}`);
+      }
+
       setEnviado(true);
+      setNombre('');
+      setEmail('');
+      setMensaje('');
+    } catch {
+      setErrorServidor('No pudimos enviar tu consulta. Inténtalo nuevamente en unos minutos.');
+    } finally {
+      setEnviando(false);
     }
   };
 
@@ -54,6 +84,7 @@ function FormularioContacto() {
     const setters = { nombre: setNombre, email: setEmail, mensaje: setMensaje };
     setters[campo](valor);
     setEnviado(false);
+    setErrorServidor('');
     setErrores((actuales) => ({ ...actuales, [campo]: undefined }));
   };
 
@@ -115,8 +146,11 @@ function FormularioContacto() {
         </div>
       </div>
 
-      <button type="submit" className="btn btn-success w-100">Enviar consulta</button>
-      {enviado && <p className="form-success" role="status">Tu consulta está lista. Gracias por contactarnos.</p>}
+      <button type="submit" className="btn btn-success w-100" disabled={enviando}>
+        {enviando ? 'Enviando...' : 'Enviar consulta'}
+      </button>
+      {enviado && <p className="form-success" role="status">Tu consulta fue enviada. Gracias por contactarnos.</p>}
+      {errorServidor && <p className="text-danger mt-2" role="alert">{errorServidor}</p>}
     </form>
   );
 }

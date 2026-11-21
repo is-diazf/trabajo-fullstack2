@@ -11,14 +11,14 @@ function AdminUsuarios() {
     actualizarUsuarioAdmin,
     eliminarUsuarioAdmin,
   } = useSesion();
-  const [editandoId, setEditandoId] = useState<string | null>(null);
+  const [editandoId, setEditandoId] = useState<number | null>(null);
   const [nombre, setNombre] = useState('');
   const [correo, setCorreo] = useState('');
   const [contrasena, setContrasena] = useState('');
   const [admin, setAdmin] = useState(false);
   const [error, setError] = useState('');
   const [mensaje, setMensaje] = useState('');
-  const idUsuarioActual = usuarios.find((cuenta) => cuenta.correo === usuarioActual?.correo)?.id;
+  const idUsuarioActual = usuarioActual?.id;
 
   const limpiarFormulario = () => {
     setEditandoId(null);
@@ -39,7 +39,7 @@ function AdminUsuarios() {
     setMensaje('');
   };
 
-  const manejarEnvio = (evento: FormEvent<HTMLFormElement>) => {
+  const manejarEnvio = async (evento: FormEvent<HTMLFormElement>) => {
     evento.preventDefault();
     setError('');
     setMensaje('');
@@ -62,8 +62,8 @@ function AdminUsuarios() {
     }
 
     const resultado = editandoId === null
-      ? crearUsuarioAdmin(nombre, correo, contrasena, admin)
-      : actualizarUsuarioAdmin(editandoId, nombre, correo, admin, contrasena);
+      ? await crearUsuarioAdmin(nombre, correo, contrasena, admin)
+      : await actualizarUsuarioAdmin(editandoId, nombre, correo, admin, contrasena);
 
     if (!resultado.correcto) {
       setError(resultado.mensaje);
@@ -73,9 +73,9 @@ function AdminUsuarios() {
     limpiarFormulario();
   };
 
-  const manejarEliminacion = (usuario: UsuarioAdministrable) => {
+  const manejarEliminacion = async (usuario: UsuarioAdministrable) => {
     if (!window.confirm(`¿Seguro que quieres eliminar la cuenta de ${usuario.nombre}?`)) return;
-    const resultado = eliminarUsuarioAdmin(usuario.id);
+    const resultado = await eliminarUsuarioAdmin(usuario.id);
     if (!resultado.correcto) {
       setError(resultado.mensaje);
       setMensaje('');

@@ -3,7 +3,6 @@ import { createPortal } from 'react-dom';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSesion } from '../../context/SesionContexto';
 import { useServicios } from '../../context/ServiciosContexto';
-import { useCarrito } from '../../context/CarritoContexto';
 
 function Navbar() {
     const [menuAbierto, setMenuAbierto] = useState(false);
@@ -12,7 +11,6 @@ function Navbar() {
     const cerrarMenu = () => setMenuAbierto(false);
     const { usuario, cerrarSesion, esAdmin } = useSesion();
     const { servicios } = useServicios();
-    const { totalUnidades } = useCarrito();
     const navegar = useNavigate();
 
     useEffect(() => {
@@ -50,12 +48,8 @@ function Navbar() {
 
     return (
         <nav className="site-navbar">
-            <div className="site-navbar-inner d-flex align-items-center justify-content-between gap-3">
-                
-                <Link className="site-brand me-3" to="/" onClick={cerrarMenu}>
-                    Veterinaria <span>San Marcos</span>
-                </Link>
-
+            <div className="site-navbar-inner">
+                <Link className="site-brand" to="/" onClick={cerrarMenu}>Veterinaria <span>San Marcos</span></Link>
                 <button
                     className="nav-toggle"
                     type="button"
@@ -68,40 +62,36 @@ function Navbar() {
                     <span />
                     <span />
                 </button>
-                <div id="navegacion-principal" className={`site-nav-content d-flex justify-content-between align-items-center gap-4${menuAbierto ? ' is-open' : ''}`}>
+                <div id="navegacion-principal" className={`site-nav-content${menuAbierto ? ' is-open' : ''}`}>
                     <div className="site-nav-links">
                         <Link className="site-nav-link" to="/" onClick={cerrarMenu}>Inicio</Link>
                         <Link className="site-nav-link" to="/novedades" onClick={cerrarMenu}>Novedades</Link>
                         <Link className="site-nav-link" to="/servicios" onClick={cerrarMenu}>Servicios</Link>
-                        <Link className="site-nav-link" to="/productos" onClick={cerrarMenu}>Productos</Link>
                         <Link className="site-nav-link" to="/info" onClick={cerrarMenu}>Quiénes somos</Link>
                         <Link className="site-nav-link" to="/contacto" onClick={cerrarMenu}>Contacto</Link>
                     </div>
 
                     <div className="site-nav-actions">
                         {usuario ? (
-                            <div className="site-nav-actions flex-shrink-0">
+                            <>
                                 {esAdmin ? (
-                                    <Link to="/admin/Dashboard" className="btn btn-sm btn-warning fw-bold px-3 rounded-pill" onClick={cerrarMenu}>
+                                    <Link to="/admin/servicios" className="btn btn-sm btn-warning fw-bold px-3 rounded-pill" onClick={cerrarMenu}>
                                         Administración
                                     </Link>
                                 ) : (
-                                    <div className="d-flex align-items-center gap-2 flex-nowrap">
+                                    <>
                                         <button className="btn btn-sm btn-outline-light rounded-pill px-3" type="button" onClick={abrirAgenda}>
-                                            Nueva hora
+                                            Agendar hora
                                         </button>
-                                        <Link to="/carrito" className="btn btn-sm btn-outline-light rounded-pill px-3" onClick={cerrarMenu}>
-                                            Carrito ({totalUnidades})
-                                        </Link>
                                         <Link to="/usuario" className="btn btn-sm btn-light text-success fw-bold px-3 rounded-pill site-login" onClick={cerrarMenu}>
                                             Mi cuenta
                                         </Link>
-                                    </div>
+                                    </>
                                 )}
-                                <button type="button" className="btn btn-sm btn-outline-light rounded-pill px-3" onClick={manejarCierreSesion}>
+                                <button type="button" className="btn btn-sm btn-outline-light" onClick={manejarCierreSesion}>
                                     Cerrar sesión
                                 </button>
-                            </div>
+                            </>
                         ) : (
                             <Link to="/login" className="btn btn-sm btn-light text-success fw-bold px-3 rounded-pill site-login" onClick={cerrarMenu}>
                                 Iniciar sesión

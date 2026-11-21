@@ -10,10 +10,11 @@ function Registro() {
   const [contrasena, setContrasena] = useState('');
   const [confirmacion, setConfirmacion] = useState('');
   const [error, setError] = useState('');
+  const [enviando, setEnviando] = useState(false);
   const { registrarUsuario } = useSesion();
   const navegar = useNavigate();
 
-  const manejarEnvio = (e: FormEvent<HTMLFormElement>) => {
+  const manejarEnvio = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!nombre.trim() || !correo.trim() || !contrasena) {
       setError('Completa todos los campos.');
@@ -32,7 +33,9 @@ function Registro() {
       return;
     }
 
-    const resultado = registrarUsuario(nombre, correo, contrasena);
+    setEnviando(true);
+    const resultado = await registrarUsuario(nombre, correo, contrasena);
+    setEnviando(false);
     if (!resultado.correcto) {
       setError(resultado.mensaje);
       return;
@@ -52,7 +55,7 @@ function Registro() {
               <CampoFormulario etiqueta="Correo electrónico" tipo="email" nombre="correo" valor={correo} alCambiar={setCorreo} />
               <CampoFormulario etiqueta="Contraseña" tipo="password" nombre="contrasena" valor={contrasena} alCambiar={setContrasena} />
               <CampoFormulario etiqueta="Confirmar contraseña" tipo="password" nombre="confirmacion" valor={confirmacion} alCambiar={setConfirmacion} />
-              <button type="submit" className="btn btn-success">Crear cuenta</button>
+              <button type="submit" className="btn btn-success" disabled={enviando}>Crear cuenta</button>
               <p className="mt-3 mb-0">¿Ya tienes una cuenta? <Link to="/login">Inicia sesión</Link></p>
             </form>
           </section>
