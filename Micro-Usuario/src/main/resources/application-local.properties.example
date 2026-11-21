@@ -1,0 +1,4 @@
+jwt.secreto=pon-aqui-la-clave-compartida-de-al-menos-32-caracteres
+
+admin.correo=correo-del-admin@ejemplo.com
+admin.contrasena=contrasena-del-admin
