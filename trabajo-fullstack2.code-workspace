@@ -1,0 +1,18 @@
+{
+	"folders": [
+		{
+			"path": "VeterinariaSanMarcos"
+		},
+		{
+			"path": "Micro-contacto"
+		},
+		{
+			"path": "Micro-usuario"
+		},
+		{
+			"path": "shop-service",
+			"name": "Micro-tienda"
+		}
+	],
+	"settings": {}
+}
