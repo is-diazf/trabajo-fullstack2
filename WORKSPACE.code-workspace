@@ -11,7 +11,9 @@
 			"uri": "file:///C:/Users/Usuario/Desktop/Micro-Contacto"
 		},
 		{
-			"path": "Micro-Usuario"
+			"path": "Micro-Usuario",
+			"name": "MICROSERVICIO USUARIO",
+			"uri": "file:///C:/Users/Usuario/Desktop/Micro-Usuario"
 		}
 	],
 	"settings": {}
