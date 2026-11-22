@@ -1,50 +1,56 @@
 # shop-service
 
-Servicio independiente para el catálogo de productos y el historial de compras. Usa Java 25, Spring Boot 4.2.0 y escucha en el puerto `8083`.
+Microservicio independiente para el catálogo, las compras y el historial de la tienda. Usa Java 25, Spring Boot 4.2.0 y el puerto `8083`.
 
-## Ejecutar
+## Capas
 
-Requiere MySQL accesible. Configura estas variables de entorno antes de iniciar:
+- `model`: entidades `Producto`, `Compra` y `CompraItem`.
+- `dto`: datos de entrada y salida de la API.
+- `repository`: interfaces para guardar y buscar productos y compras.
+- `service`: reglas de negocio, cálculo de totales y actualización de existencias.
+- `controller`: rutas HTTP para productos y compras.
 
-- `DB_URL`: por defecto `jdbc:mysql://localhost:3306/shop_db?createDatabaseIfNotExist=true&serverTimezone=UTC`
-- `DB_USERNAME` y `DB_PASSWORD`: credenciales MySQL; no se usan credenciales predeterminadas.
-- `SERVER_PORT`: `8083`
-- `SHOP_ADMIN_USERNAME` y `SHOP_ADMIN_PASSWORD`: credenciales requeridas para arrancar y proteger operaciones administrativas e historial.
-- `CORS_ALLOWED_ORIGINS`: por defecto `http://localhost:3000,http://localhost:5173`.
+## Configuración
 
-En PowerShell, desde la carpeta `shop-service`, configura credenciales antes de iniciar:
+En ejecución requiere MySQL. Antes de iniciar, configura las variables de entorno:
+
+- `DB_URL`: por defecto `jdbc:mysql://localhost:3306/shop_db?createDatabaseIfNotExist=true&serverTimezone=UTC`.
+- `DB_USERNAME` y `DB_PASSWORD`: credenciales de MySQL.
+- `SHOP_ADMIN_USERNAME` y `SHOP_ADMIN_PASSWORD`: credenciales del administrador.
+- `SERVER_PORT`: opcional, por defecto `8083`.
+- `CORS_ALLOWED_ORIGINS`: opcional, por defecto `http://localhost:3000,http://localhost:5173`.
+
+Ejemplo en PowerShell:
 
 ```powershell
 $env:DB_USERNAME = "shop_user"
 $env:DB_PASSWORD = "<clave-de-mysql>"
 $env:SHOP_ADMIN_USERNAME = "admin"
 $env:SHOP_ADMIN_PASSWORD = "<una-clave-segura>"
-.\mvnw.cmd spring-boot:run
+.\mvnw.cmd -f shop-service\pom.xml spring-boot:run
 ```
 
-Desde la carpeta `shop-service`, ejecuta las pruebas con:
+Las pruebas usan H2 en memoria:
 
 ```powershell
-.\mvnw.cmd clean test
+.\mvnw.cmd -f shop-service\pom.xml clean test
 ```
 
-## API
+## Endpoints
 
 | Método | Ruta | Acceso |
 | --- | --- | --- |
 | GET | `/api/productos` | Público |
 | GET | `/api/productos/{id}` | Público |
-| POST | `/api/productos` | HTTP Basic, rol admin |
-| PUT | `/api/productos/{id}` | HTTP Basic, rol admin |
-| DELETE | `/api/productos/{id}` | HTTP Basic, rol admin |
-| POST | `/api/compras` | React/cliente |
-| GET | `/api/compras/usuario/{id}` | HTTP Basic, rol admin |
+| POST | `/api/productos` | Administrador |
+| PUT | `/api/productos/{id}` | Administrador |
+| DELETE | `/api/productos/{id}` | Administrador |
+| POST | `/api/compras` | Cliente |
+| GET | `/api/compras/usuario/{id}` | Administrador |
 
-Las credenciales HTTP Basic se toman de `SHOP_ADMIN_USERNAME` y `SHOP_ADMIN_PASSWORD`. Las solicitudes de compra reciben identificadores y cantidades; los precios y el total siempre se obtienen del catálogo del servidor. Cada compra conserva nombre y precio unitario como datos históricos, y el stock se valida y descuenta dentro de una transacción.
+`POST /api/compras` recibe `usuarioId` y una lista de `productoId`/`cantidad`. El servicio busca los precios del catálogo, calcula el total y descuenta existencias dentro de una transacción. Los detalles guardan el nombre y precio de cada producto al momento de la compra.
 
-Usa HTTPS al exponer los endpoints protegidos fuera de un entorno local.
-
-Ejemplo de `POST /api/compras`:
+Ejemplo:
 
 ```json
 {
@@ -55,4 +61,4 @@ Ejemplo de `POST /api/compras`:
 }
 ```
 
-No se integró autenticación de usuarios porque no se especificó un proveedor de identidad. Por ahora el cliente envía `usuarioId` y la creación de compras no exige autenticación; antes de producción, debe verificarse la identidad del usuario y que coincida con ese ID.
+No se definió un proveedor de identidad de usuarios: por ahora la compra recibe el `usuarioId` enviado por el cliente. Antes de producción debe integrarse autenticación para comprobar que la persona solo compre con su propia cuenta. Usa HTTPS al exponer el servicio fuera de un entorno local.

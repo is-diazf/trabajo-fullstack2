@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: cl.sanmarcos.shop.service.CompraServiceTests
+-------------------------------------------------------------------------------
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.966 s -- in cl.sanmarcos.shop.service.CompraServiceTests

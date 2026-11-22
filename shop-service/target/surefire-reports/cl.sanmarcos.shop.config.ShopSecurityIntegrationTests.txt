@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: cl.sanmarcos.shop.config.ShopSecurityIntegrationTests
+-------------------------------------------------------------------------------
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 7.902 s -- in cl.sanmarcos.shop.config.ShopSecurityIntegrationTests
