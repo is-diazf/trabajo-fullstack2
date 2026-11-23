@@ -3,8 +3,12 @@ import { useNovedades } from "../context/NovedadesContexto";
 
 function NovedadDetalle() {
   const { id } = useParams();
-  const { novedades } = useNovedades();
+  const { novedades, cargando } = useNovedades();
   const novedad = novedades.find((n) => n.id === Number(id));
+
+  if (!novedad && cargando) {
+    return <p className="container py-5 text-center text-muted" role="status">Cargando novedad...</p>;
+  }
 
   if (!novedad) {
     return (

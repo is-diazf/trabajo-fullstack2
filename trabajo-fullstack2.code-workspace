@@ -12,6 +12,9 @@
 		{
 			"path": "shop-service",
 			"name": "Micro-tienda"
+		},
+		{
+			"path": "veterinaria-service",
 		}
 	],
 	"settings": {}

@@ -5,9 +5,11 @@ import cl.vet.Micro_Usuario.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 @Component
+@Order(1)
 public class DatosIniciales implements CommandLineRunner {
 
     private final UsuarioRepository repository;

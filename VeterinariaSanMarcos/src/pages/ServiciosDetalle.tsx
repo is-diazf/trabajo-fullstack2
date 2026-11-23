@@ -1,12 +1,17 @@
 // src/paginas/ServicioDetalle.tsx
 import { useParams, Link } from "react-router-dom";
-import serviciosData from "../data/ServiciosData";
+import { useServicios } from "../context/ServiciosContexto";
 
 function ServicioDetalle() {
 
   const { id } = useParams();
-  
-  const servicio = serviciosData.find((s) => s.id === Number(id));
+  const { servicios, cargando } = useServicios();
+
+  const servicio = servicios.find((s) => s.id === Number(id));
+
+  if (!servicio && cargando) {
+    return <p className="container py-5 text-center text-muted" role="status">Cargando servicio...</p>;
+  }
 
   if (!servicio) {
     return (

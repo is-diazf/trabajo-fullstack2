@@ -12,5 +12,7 @@ public record ProductoRequest(
 		@NotBlank @Size(max = 120) String nombre,
 		@Size(max = 1000) String descripcion,
 		@NotNull @DecimalMin("0.01") @Digits(integer = 10, fraction = 2) BigDecimal precio,
-		@NotNull @PositiveOrZero Integer stock) {
+		@NotNull @PositiveOrZero Integer stock,
+		@Size(max = 60) String categoria,
+		@Size(max = 255) String imagen) {
 }

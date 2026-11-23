@@ -75,7 +75,7 @@ function Navbar() {
                         {usuario ? (
                             <>
                                 {esAdmin ? (
-                                    <Link to="/admin/servicios" className="btn btn-sm btn-warning fw-bold px-3 rounded-pill" onClick={cerrarMenu}>
+                                    <Link to="/admin" className="btn btn-sm btn-warning fw-bold px-3 rounded-pill" onClick={cerrarMenu}>
                                         Administración
                                     </Link>
                                 ) : (

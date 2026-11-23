@@ -26,7 +26,7 @@ public class CompraService {
 	}
 
 	@Transactional
-	public CompraResponse create(CompraRequest request) {
+	public CompraResponse create(Long usuarioId, CompraRequest request) {
 		Map<Long, Integer> cantidadesPorProducto = new TreeMap<>();
 		for (CompraRequest.ItemCompraRequest item : request.items()) {
 			try {
@@ -36,7 +36,7 @@ public class CompraService {
 			}
 		}
 
-		Compra compra = new Compra(request.usuarioId());
+		Compra compra = new Compra(usuarioId);
 		BigDecimal total = BigDecimal.ZERO;
 		for (Map.Entry<Long, Integer> entry : cantidadesPorProducto.entrySet()) {
 			Producto producto = productoRepository.findByIdForUpdate(entry.getKey())
@@ -56,6 +56,13 @@ public class CompraService {
 
 		compra.setTotal(total);
 		return CompraResponse.from(compraRepository.save(compra));
+	}
+
+	@Transactional(readOnly = true)
+	public List<CompraResponse> findAll() {
+		return compraRepository.findAllByOrderByCreadaEnDesc().stream()
+				.map(CompraResponse::from)
+				.toList();
 	}
 
 	@Transactional(readOnly = true)

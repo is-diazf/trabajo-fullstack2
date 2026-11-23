@@ -17,6 +17,7 @@ import AdminUsuarios from './pages/AdminUsuarios';
 import { useSesion } from './context/SesionContexto';
 import NovedadDetalle from './pages/NovedadDetalle';
 import AdminNovedades from './pages/AdminNovedades';
+import AdminPanel from './pages/AdminPanel';
 
 function RutaAdministrador({ children }: { children: ReactNode }) {
   const { usuario, esAdmin, cargando } = useSesion();
@@ -36,6 +37,8 @@ function App() {
         
 
         <Route path="/" element={<Inicio />} />
+
+        <Route path="/admin" element={<RutaAdministrador><AdminPanel /></RutaAdministrador>} />
 
         <Route path="/novedades" element={<Novedades />} />
         <Route path="/novedades/:id" element={<NovedadDetalle />} />

@@ -1,11 +1,13 @@
 // src/paginas/AdminNovedades.tsx
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { useNovedades } from "../context/NovedadesContexto";
+import { useNovedades, type Novedad } from "../context/NovedadesContexto";
 
 function AdminNovedades() {
-  const { novedades, agregarNovedad, editarNovedad, eliminarNovedad } = useNovedades();
+  const { novedades, cargando, error: errorCarga, agregarNovedad, editarNovedad, eliminarNovedad } = useNovedades();
   const [editandoId, setEditandoId] = useState<number | null>(null);
+  const [guardando, setGuardando] = useState(false);
+  const [error, setError] = useState("");
   
   const [formData, setFormData] = useState({
     titulo: "",
@@ -14,24 +16,35 @@ function AdminNovedades() {
     imagen: "/img/esterilizacion.jpeg",
   });
 
-  const manejarCambio = (e: any) => {
+  const manejarCambio = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value, 
+      [e.target.name]: e.target.value,
     });
   };
 
-  const manejarEnvio = (e: any) => {
+  const manejarEnvio = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (editandoId === null) {
-      agregarNovedad(formData); 
+    setError("");
+    setGuardando(true);
+    const resultado = editandoId === null
+      ? await agregarNovedad(formData)
+      : await editarNovedad(editandoId, formData);
+    setGuardando(false);
+    if (resultado.correcto) {
+      limpiarFormulario();
     } else {
-      editarNovedad(editandoId, formData); 
+      setError(resultado.mensaje);
     }
-    limpiarFormulario(); 
   };
 
-  const prepararEdicion = (novedad: any) => {
+  const manejarEliminar = async (id: number) => {
+    setError("");
+    const resultado = await eliminarNovedad(id);
+    if (!resultado.correcto) setError(resultado.mensaje);
+  };
+
+  const prepararEdicion = (novedad: Novedad) => {
     setEditandoId(novedad.id);
     setFormData({
       titulo: novedad.titulo,
@@ -55,6 +68,10 @@ function AdminNovedades() {
         </Link>
       </div>
 
+      {(error || errorCarga) && (
+        <p className="alert alert-danger" role="alert">{error || errorCarga}</p>
+      )}
+
       <div className="row g-4">
         {/* FORMULARIO */}
         <div className="col-12 col-md-5">
@@ -66,25 +83,25 @@ function AdminNovedades() {
               
               <form onSubmit={manejarEnvio}>
                 <div className="mb-3">
-                  <label className="form-label fw-bold">Título</label>
-                  <input type="text" className="form-control" name="titulo" value={formData.titulo} onChange={manejarCambio} required />
+                  <label className="form-label fw-bold" htmlFor="novedad-titulo">Título</label>
+                  <input id="novedad-titulo" type="text" className="form-control" name="titulo" value={formData.titulo} onChange={manejarCambio} required />
                 </div>
                 <div className="mb-3">
-                  <label className="form-label fw-bold">Resumen corto</label>
-                  <textarea className="form-control" name="resumen" rows={2} value={formData.resumen} onChange={manejarCambio} required></textarea>
+                  <label className="form-label fw-bold" htmlFor="novedad-resumen">Resumen corto</label>
+                  <textarea id="novedad-resumen" className="form-control" name="resumen" rows={2} value={formData.resumen} onChange={manejarCambio} required></textarea>
                 </div>
                 <div className="mb-3">
-                  <label className="form-label fw-bold">Detalle completo</label>
-                  <textarea className="form-control" name="detalle" rows={4} value={formData.detalle} onChange={manejarCambio} required></textarea>
+                  <label className="form-label fw-bold" htmlFor="novedad-detalle">Detalle completo</label>
+                  <textarea id="novedad-detalle" className="form-control" name="detalle" rows={4} value={formData.detalle} onChange={manejarCambio} required></textarea>
                 </div>
                 <div className="mb-3">
-                  <label className="form-label fw-bold">Ruta de la Imagen</label>
-                  <input type="text" className="form-control" name="imagen" value={formData.imagen} onChange={manejarCambio} required />
+                  <label className="form-label fw-bold" htmlFor="novedad-imagen">Ruta de la Imagen</label>
+                  <input id="novedad-imagen" type="text" className="form-control" name="imagen" value={formData.imagen} onChange={manejarCambio} required />
                   <small className="text-muted">Ejemplo: /img/esterilizacion.jpeg</small>
                 </div>
                 
-                <button type="submit" className="btn btn-success w-100 fw-bold">
-                  {editandoId === null ? "Guardar Novedad" : "Guardar Cambios"}
+                <button type="submit" className="btn btn-success w-100 fw-bold" disabled={guardando}>
+                  {guardando ? "Guardando..." : editandoId === null ? "Guardar Novedad" : "Guardar Cambios"}
                 </button>
                 
                 {editandoId !== null && (
@@ -112,6 +129,9 @@ function AdminNovedades() {
                     </tr>
                   </thead>
                   <tbody>
+                    {cargando && novedades.length === 0 && (
+                      <tr><td colSpan={3} className="text-center text-muted">Cargando novedades...</td></tr>
+                    )}
                     {novedades.map((novedad) => (
                       <tr key={novedad.id}>
                         <td className="fw-bold" style={{maxWidth: '120px'}}>{novedad.titulo}</td>
@@ -120,7 +140,7 @@ function AdminNovedades() {
                           <button className="btn btn-sm btn-outline-primary me-2" onClick={() => prepararEdicion(novedad)}>
                             Editar
                           </button>
-                          <button className="btn btn-sm btn-outline-danger" onClick={() => eliminarNovedad(novedad.id)}>
+                          <button className="btn btn-sm btn-outline-danger" onClick={() => void manejarEliminar(novedad.id)}>
                             Eliminar
                           </button>
                         </td>

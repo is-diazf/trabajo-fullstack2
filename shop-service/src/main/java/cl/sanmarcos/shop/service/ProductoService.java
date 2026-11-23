@@ -30,7 +30,8 @@ public class ProductoService {
 	@Transactional
 	public ProductoResponse create(ProductoRequest request) {
 		Producto producto = new Producto(
-				request.nombre(), request.descripcion(), request.precio(), request.stock());
+				request.nombre(), request.descripcion(), request.precio(), request.stock(),
+				request.categoria(), request.imagen());
 		return ProductoResponse.from(productoRepository.save(producto));
 	}
 
@@ -41,6 +42,8 @@ public class ProductoService {
 		producto.setDescripcion(request.descripcion());
 		producto.setPrecio(request.precio());
 		producto.setStock(request.stock());
+		producto.setCategoria(request.categoria());
+		producto.setImagen(request.imagen());
 		return ProductoResponse.from(producto);
 	}
 

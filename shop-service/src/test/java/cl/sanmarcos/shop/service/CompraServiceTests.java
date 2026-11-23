@@ -40,8 +40,8 @@ class CompraServiceTests {
 		Producto producto = productoRepository.save(
 				new Producto("Vacuna", "Dosis", new BigDecimal("1250.50"), 4));
 
-		CompraResponse compra = compraService.create(new CompraRequest(
-				7L, List.of(new CompraRequest.ItemCompraRequest(producto.getId(), 2))));
+		CompraResponse compra = compraService.create(7L, new CompraRequest(
+				List.of(new CompraRequest.ItemCompraRequest(producto.getId(), 2))));
 
 		assertEquals(new BigDecimal("2501.00"), compra.total());
 		assertEquals(2, productoRepository.findById(producto.getId()).orElseThrow().getStock());
@@ -55,8 +55,7 @@ class CompraServiceTests {
 		Producto unavailable = productoRepository.save(
 				new Producto("Alimento", "Bolsa", new BigDecimal("990.00"), 1));
 
-		assertThrows(InsufficientStockException.class, () -> compraService.create(new CompraRequest(
-				7L,
+		assertThrows(InsufficientStockException.class, () -> compraService.create(7L, new CompraRequest(
 				List.of(
 						new CompraRequest.ItemCompraRequest(available.getId(), 1),
 						new CompraRequest.ItemCompraRequest(unavailable.getId(), 2)))));
