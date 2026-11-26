@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
 import App from '../App';
@@ -95,6 +95,94 @@ vi.mock('../servicios/api', async (importOriginal) => ({
   default: backend.api,
 }));
 
+vi.mock('../servicios/tienda', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../servicios/tienda')>()),
+  listarProductos: vi.fn().mockResolvedValue([
+    { id: 1, nombre: 'Juguete interactivo', descripcion: 'Juguete resistente.', categoria: 'Juguetes', precio: 8990, imagen: '/img/juguetes_mascotas.jpg', stock: 5 },
+  ]),
+  registrarCompra: vi.fn(),
+  listarComprasDeUsuario: vi.fn().mockResolvedValue([]),
+  listarCompras: vi.fn().mockResolvedValue([
+    { id: 15, usuarioId: 2, creadaEn: '2026-11-21T12:00:00Z', total: 17980, items: [{ productoId: 1, nombreProducto: 'Juguete interactivo', cantidad: 2, precioUnitario: 8990 }] },
+  ]),
+}));
+
+vi.mock('../servicios/panelAdmin', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../servicios/panelAdmin')>()),
+  listarMensajesContacto: vi.fn().mockResolvedValue([
+    { id: 1, nombreCompleto: 'Ana', correo: 'ana@test.com', mensaje: 'Hola, quería consultar por el precio de la esterilización.', estado: 'PENDIENTE', fechaCreacion: '2026-11-20T10:15:00' },
+  ]),
+  listarHistoriales: vi.fn().mockResolvedValue([
+    { id: 1, usuarioId: 2, mascota: 'Firulais', fecha: '2024-05-10', motivo: 'Vacuna', veterinario: 'Dra. Soto', estado: 'Cerrado' },
+  ]),
+}));
+
+// Veterinaria-Service falso: servicios y novedades con estado, se reinicia en cada test.
+const veterinaria = vi.hoisted(() => {
+  type Servicio = { id: number; titulo: string; descripcion: string; precio: number; imagen: string };
+  type Novedad = { id: number; titulo: string; resumen: string; detalle: string; imagen: string };
+
+  const estado = { servicios: [] as Servicio[], novedades: [] as Novedad[], siguienteId: 100 };
+
+  const reiniciar = () => {
+    estado.servicios = [
+      { id: 1, titulo: 'Esterilización de mascotas', descripcion: 'Servicio de esterilización para mascotas, incluye anestesia y recuperación', precio: 30000, imagen: '/img/esterilizacion.jpeg' },
+      { id: 2, titulo: 'Perruquería', descripcion: 'Peluquería de mascotas, corte y baño', precio: 25000, imagen: '/img/perruqueria.jpg' },
+    ];
+    estado.novedades = [
+      { id: 1, titulo: 'Nueva campaña de vacunación', resumen: 'Protege a tu mascota contra la rabia y otras enfermedades.', detalle: 'Durante todo el mes de mayo, tendremos un 20% de descuento en la vacuna antirrábica y la vacuna séxtuple.', imagen: '/img/esterilizacion.jpeg' },
+      { id: 2, titulo: 'Horario extendido los sábados', resumen: 'Ahora atendemos hasta las 18:00 hrs los fines de semana.', detalle: 'Hemos extendido nuestro horario de atención los días sábados.', imagen: '/img/perruqueria.jpg' },
+    ];
+    estado.siguienteId = 100;
+  };
+
+  return {
+    estado,
+    reiniciar,
+    listarServicios: async () => estado.servicios.map((s) => ({ ...s })),
+    crearServicio: async (datos: Omit<Servicio, 'id'>) => {
+      const creado = { ...datos, id: estado.siguienteId++ };
+      estado.servicios.push(creado);
+      return { ...creado };
+    },
+    actualizarServicio: async (id: number, datos: Omit<Servicio, 'id'>) => {
+      const actualizado = { ...datos, id };
+      estado.servicios = estado.servicios.map((s) => (s.id === id ? actualizado : s));
+      return { ...actualizado };
+    },
+    borrarServicio: async (id: number) => {
+      estado.servicios = estado.servicios.filter((s) => s.id !== id);
+    },
+    listarNovedades: async () => estado.novedades.map((n) => ({ ...n })),
+    crearNovedad: async (datos: Omit<Novedad, 'id'>) => {
+      const creada = { ...datos, id: estado.siguienteId++ };
+      estado.novedades.push(creada);
+      return { ...creada };
+    },
+    actualizarNovedad: async (id: number, datos: Omit<Novedad, 'id'>) => {
+      const actualizada = { ...datos, id };
+      estado.novedades = estado.novedades.map((n) => (n.id === id ? actualizada : n));
+      return { ...actualizada };
+    },
+    borrarNovedad: async (id: number) => {
+      estado.novedades = estado.novedades.filter((n) => n.id !== id);
+    },
+  };
+});
+
+// Cada función delega en `veterinaria` al llamarse, así un test puede reemplazar una.
+vi.mock('../servicios/veterinaria', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../servicios/veterinaria')>()),
+  listarServicios: () => veterinaria.listarServicios(),
+  crearServicio: (...args: Parameters<typeof veterinaria.crearServicio>) => veterinaria.crearServicio(...args),
+  actualizarServicio: (...args: Parameters<typeof veterinaria.actualizarServicio>) => veterinaria.actualizarServicio(...args),
+  borrarServicio: (...args: Parameters<typeof veterinaria.borrarServicio>) => veterinaria.borrarServicio(...args),
+  listarNovedades: () => veterinaria.listarNovedades(),
+  crearNovedad: (...args: Parameters<typeof veterinaria.crearNovedad>) => veterinaria.crearNovedad(...args),
+  actualizarNovedad: (...args: Parameters<typeof veterinaria.actualizarNovedad>) => veterinaria.actualizarNovedad(...args),
+  borrarNovedad: (...args: Parameters<typeof veterinaria.borrarNovedad>) => veterinaria.borrarNovedad(...args),
+}));
+
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
@@ -102,6 +190,7 @@ afterEach(() => {
 beforeEach(() => {
   localStorage.clear();
   backend.reiniciar();
+  veterinaria.reiniciar();
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, status: 201 }));
 });
 
@@ -120,12 +209,11 @@ function renderApp(initialEntry = '/') {
 }
 
 describe('páginas públicas', () => {
-  it('muestra las novedades iniciales aunque el navegador guardara una lista vacía', () => {
-    localStorage.setItem('novedades_vet', '[]');
+  it('muestra las novedades que entrega el servicio de veterinaria', async () => {
     renderApp('/novedades');
 
     expect(screen.getByRole('heading', { name: 'Novedades' })).toBeTruthy();
-    expect(screen.getByRole('heading', { name: 'Nueva campaña de vacunación' })).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: 'Nueva campaña de vacunación' })).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Horario extendido los sábados' })).toBeTruthy();
   });
 
@@ -192,6 +280,7 @@ describe('páginas públicas', () => {
     });
     fireEvent.click(screen.getByRole('button', { name: 'Iniciar sesión' }));
     fireEvent.click(await screen.findByRole('link', { name: 'Administración' }));
+    fireEvent.click(screen.getByRole('link', { name: 'Gestionar Servicios' }));
   }
 
   async function iniciarSesionComoUsuario() {
@@ -287,6 +376,7 @@ describe('páginas públicas', () => {
 
     expect(await screen.findByRole('heading', { name: /cuidamos de quienes hacen tu vida mejor/i })).toBeTruthy();
     fireEvent.click(await screen.findByRole('link', { name: 'Administración' }));
+    fireEvent.click(screen.getByRole('link', { name: 'Gestionar Servicios' }));
     expect(screen.getByRole('heading', { name: /panel de administración: servicios/i })).toBeTruthy();
     fireEvent.click(screen.getByRole('link', { name: 'Administrar usuarios' }));
     expect(screen.getByRole('heading', { name: /panel de administración: usuarios/i })).toBeTruthy();
@@ -317,11 +407,11 @@ describe('páginas públicas', () => {
   // PRUEBAS DE ISRAEL (PERSONA 2)
   // ==========================================
 
-  it('11. debe mostrar el listado de servicios y permitir filtrarlos', () => {
+  it('11. debe mostrar el listado de servicios y permitir filtrarlos', async () => {
     renderApp('/servicios');
 
-    // Verificamos que los servicios iniciales estén
-    expect(screen.getByRole('heading', { name: 'Esterilización de mascotas' })).toBeTruthy();
+    // Verificamos que los servicios iniciales estén (llegan desde la API)
+    expect(await screen.findByRole('heading', { name: 'Esterilización de mascotas' })).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Perruquería' })).toBeTruthy();
 
     // Usamos el buscador
@@ -333,28 +423,29 @@ describe('páginas públicas', () => {
     expect(screen.queryByRole('heading', { name: 'Esterilización de mascotas' })).toBeNull();
   });
 
-  it('12. debe mostrar el detalle de un servicio específico', () => {
+  it('12. debe mostrar el detalle de un servicio específico', async () => {
     renderApp('/servicios/1');
 
-    expect(screen.getByRole('heading', { name: 'Esterilización de mascotas' })).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: 'Esterilización de mascotas' })).toBeTruthy();
     expect(screen.getByText(/incluye anestesia y recuperación/i)).toBeTruthy();
     expect(screen.getByText(/30.000/)).toBeTruthy(); // Verifica el precio
   });
 
-  it('13. debe mostrar el detalle de una novedad específica', () => {
+  it('13. debe mostrar el detalle de una novedad específica', async () => {
     renderApp('/novedades/1');
 
-    expect(screen.getByRole('heading', { name: 'Nueva campaña de vacunación' })).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: 'Nueva campaña de vacunación' })).toBeTruthy();
     expect(screen.getByText(/Durante todo el mes de mayo/i)).toBeTruthy();
   });
 
-  it('14. el admin puede crear un nuevo servicio desde el panel', () => {
-    // 1. Iniciamos sesión como admin
+  it('14. el admin puede crear un nuevo servicio desde el panel', async () => {
+    // 1. Iniciamos sesión como admin (el login es asíncrono, esperamos el link)
     renderApp('/login');
     fireEvent.change(screen.getByLabelText('Correo Electrónico'), { target: { value: 'admin.admin@admin.admin' } });
     fireEvent.change(screen.getByLabelText('Contraseña'), { target: { value: 'increibleclavesupersegura' } });
     fireEvent.click(screen.getByRole('button', { name: 'Iniciar sesión' }));
-    fireEvent.click(screen.getByRole('link', { name: 'Administración' }));
+    fireEvent.click(await screen.findByRole('link', { name: 'Administración' }));
+    fireEvent.click(screen.getByRole('link', { name: 'Gestionar Servicios' }));
 
     // 2. Llenamos el formulario de crear servicio
     fireEvent.change(screen.getByLabelText('Título'), { target: { value: 'Nuevo Servicio Test' } });
@@ -362,36 +453,38 @@ describe('páginas públicas', () => {
     fireEvent.change(screen.getByLabelText('Precio ($)'), { target: { value: '15000' } });
     fireEvent.click(screen.getByRole('button', { name: 'Guardar Servicio' }));
 
-    // 3. Verificamos que aparezca en la tabla
-    expect(screen.getByRole('cell', { name: 'Nuevo Servicio Test' })).toBeTruthy();
+    // 3. Verificamos que aparezca en la tabla y que se guardó en la API
+    expect(await screen.findByRole('cell', { name: 'Nuevo Servicio Test' })).toBeTruthy();
+    expect(veterinaria.estado.servicios.some((servicio) => servicio.titulo === 'Nuevo Servicio Test')).toBe(true);
   });
 
-  it('15. el admin puede editar y eliminar una novedad', () => {
-    // 1. Iniciamos sesión como admin y vamos a novedades
+  it('15. el admin puede editar y eliminar una novedad', async () => {
+    // 1. Iniciamos sesión como admin y vamos a novedades desde el panel
     renderApp('/login');
     fireEvent.change(screen.getByLabelText('Correo Electrónico'), { target: { value: 'admin.admin@admin.admin' } });
     fireEvent.change(screen.getByLabelText('Contraseña'), { target: { value: 'increibleclavesupersegura' } });
     fireEvent.click(screen.getByRole('button', { name: 'Iniciar sesión' }));
-    
-    // Navegamos a la gestión de novedades (asumiendo que el link está ahí)
-    fireEvent.click(screen.getByRole('link', { name: 'Administrar novedades' })); 
+    fireEvent.click(await screen.findByRole('link', { name: 'Administración' }));
+    fireEvent.click(screen.getByRole('link', { name: 'Gestionar Novedades' }));
 
     // 2. Probamos EDITAR
-    const filaNovedad = screen.getByRole('row', { name: /Nueva campaña de vacunación/i });
+    const filaNovedad = await screen.findByRole('row', { name: /Nueva campaña de vacunación/i });
     fireEvent.click(within(filaNovedad).getByRole('button', { name: 'Editar' }));
-    
+
     fireEvent.change(screen.getByLabelText('Título'), { target: { value: 'Título Editado' } });
     fireEvent.click(screen.getByRole('button', { name: 'Guardar Cambios' }));
-    expect(screen.getByRole('cell', { name: 'Título Editado' })).toBeTruthy();
+    expect(await screen.findByRole('cell', { name: 'Título Editado' })).toBeTruthy();
 
     // 3. Probamos ELIMINAR
     // Mockeamos el window.confirm para que devuelva true automáticamente
-    window.confirm = () => true;
+    const confirmar = vi.spyOn(window, 'confirm').mockReturnValue(true);
     const filaEditada = screen.getByRole('row', { name: /Título Editado/i });
     fireEvent.click(within(filaEditada).getByRole('button', { name: 'Eliminar' }));
 
-    // Verificamos que ya no esté en la tabla
-    expect(screen.queryByRole('cell', { name: 'Título Editado' })).toBeNull();
+    // Verificamos que ya no esté en la tabla ni en la API
+    await waitFor(() => expect(screen.queryByRole('cell', { name: 'Título Editado' })).toBeNull());
+    expect(veterinaria.estado.novedades.some((novedad) => novedad.id === 1)).toBe(false);
+    confirmar.mockRestore();
   });
 
    /*
@@ -442,7 +535,7 @@ describe('páginas públicas', () => {
     renderApp();
     await iniciarSesionComoAdmin();
 
-    const filaServicio = screen.getByRole('row', { name: /Esterilización de mascotas/i });
+    const filaServicio = await screen.findByRole('row', { name: /Esterilización de mascotas/i });
     fireEvent.click(within(filaServicio).getByRole('button', { name: 'Editar' }));
     fireEvent.change(screen.getByDisplayValue('Esterilización de mascotas'), {
       target: { value: 'Esterilización actualizada' },
@@ -450,27 +543,42 @@ describe('páginas públicas', () => {
     fireEvent.change(screen.getByDisplayValue('30000'), { target: { value: '35000' } });
     fireEvent.click(screen.getByRole('button', { name: 'Actualizar Servicio' }));
 
-    expect(screen.getByRole('cell', { name: 'Esterilización actualizada' })).toBeTruthy();
-    const servicios = JSON.parse(localStorage.getItem('servicios_vet') ?? '[]');
-    expect(servicios.find((servicio: { id: number }) => servicio.id === 1).precio).toBe(35000);
+    expect(await screen.findByRole('cell', { name: 'Esterilización actualizada' })).toBeTruthy();
+    expect(veterinaria.estado.servicios.find((servicio) => servicio.id === 1)?.precio).toBe(35000);
   });
 
   it('20. permite al administrador eliminar un servicio después de confirmar', async () => {
     renderApp();
     await iniciarSesionComoAdmin();
 
-    const filaServicio = screen.getByRole('row', { name: /Perruquería/i });
-    const confirmOriginal = window.confirm;
-    window.confirm = () => true;
-    try {
-      fireEvent.click(within(filaServicio).getByRole('button', { name: 'Eliminar' }));
-    } finally {
-      window.confirm = confirmOriginal;
-    }
+    const filaServicio = await screen.findByRole('row', { name: /Perruquería/i });
+    const confirmar = vi.spyOn(window, 'confirm').mockReturnValue(true);
+    fireEvent.click(within(filaServicio).getByRole('button', { name: 'Eliminar' }));
 
-    expect(screen.queryByRole('row', { name: /Perruquería/i })).toBeNull();
-    const servicios = JSON.parse(localStorage.getItem('servicios_vet') ?? '[]');
-    expect(servicios.some((servicio: { id: number }) => servicio.id === 2)).toBe(false);
+    await waitFor(() => expect(screen.queryByRole('row', { name: /Perruquería/i })).toBeNull());
+    expect(veterinaria.estado.servicios.some((servicio) => servicio.id === 2)).toBe(false);
+    confirmar.mockRestore();
+  });
+
+  it('25. muestra el error de la API si el admin no puede guardar un servicio', async () => {
+    const original = veterinaria.crearServicio;
+    veterinaria.crearServicio = async () => {
+      throw { isAxiosError: true, response: { status: 403, data: {} } };
+    };
+    try {
+      localStorage.setItem('token_vet', 'token-1');
+      renderApp('/admin/servicios');
+
+      fireEvent.change(await screen.findByLabelText('Título'), { target: { value: 'No se guarda' } });
+      fireEvent.change(screen.getByLabelText('Descripción'), { target: { value: 'x' } });
+      fireEvent.change(screen.getByLabelText('Precio ($)'), { target: { value: '1000' } });
+      fireEvent.click(screen.getByRole('button', { name: 'Guardar Servicio' }));
+
+      expect(await screen.findByRole('alert')).toBeTruthy();
+      expect(screen.queryByRole('cell', { name: 'No se guarda' })).toBeNull();
+    } finally {
+      veterinaria.crearServicio = original;
+    }
   });
 
   it('21. mantiene la sesión al recargar la página si hay un token guardado', async () => {
@@ -486,5 +594,30 @@ describe('páginas públicas', () => {
 
     expect(await screen.findByRole('heading', { name: 'Login' })).toBeTruthy();
     expect(localStorage.getItem('token_vet')).toBeNull();
+  });
+
+  it('23. el admin ve los mensajes de contacto y los historiales en el panel general', async () => {
+    localStorage.setItem('token_vet', 'token-1');
+    renderApp('/admin');
+
+    expect(await screen.findByRole('heading', { name: /panel de administración general/i })).toBeTruthy();
+    expect(await screen.findByRole('cell', { name: 'ana@test.com' })).toBeTruthy();
+    expect(screen.getByText(/precio de la esterilización/i)).toBeTruthy();
+
+    fireEvent.click(screen.getByRole('button', { name: /historiales médicos/i }));
+    expect(await screen.findByRole('cell', { name: 'Firulais' })).toBeTruthy();
+    expect(await screen.findByRole('cell', { name: 'María García' })).toBeTruthy();
+
+    fireEvent.click(screen.getByRole('button', { name: /compras de usuarios/i }));
+    expect(await screen.findByRole('cell', { name: '#15' })).toBeTruthy();
+    expect(screen.getByRole('cell', { name: 'Juguete interactivo × 2' })).toBeTruthy();
+  });
+
+  it('24. no permite entrar al panel general sin ser administrador', async () => {
+    localStorage.setItem('token_vet', 'token-2');
+    renderApp('/admin');
+
+    expect(await screen.findByRole('link', { name: 'Mi cuenta' })).toBeTruthy();
+    expect(screen.queryByRole('heading', { name: /panel de administración general/i })).toBeNull();
   });
 });

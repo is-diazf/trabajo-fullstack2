@@ -4,7 +4,10 @@ import { useCarrito } from '../context/CarritoContexto';
 
 function Carrito() {
   const [mensaje, setMensaje] = useState('');
+  const [error, setError] = useState('');
+  const [procesando, setProcesando] = useState(false);
   const {
+    productos,
     carrito,
     totalCarrito,
     totalUnidades,
@@ -13,6 +16,20 @@ function Carrito() {
     finalizarCompra,
   } = useCarrito();
   const formatoPrecio = (precio: number) => `$${precio.toLocaleString('es-CL')}`;
+  const stockDe = (productoId: number) => productos.find((producto) => producto.id === productoId)?.stock;
+
+  const comprar = async () => {
+    setMensaje('');
+    setError('');
+    setProcesando(true);
+    const resultado = await finalizarCompra();
+    setProcesando(false);
+    if (resultado.correcto) {
+      setMensaje('Compra registrada en tu historial. Este demo no procesa pagos.');
+    } else {
+      setError(resultado.mensaje);
+    }
+  };
 
   return (
     <main className="container py-5">
@@ -22,6 +39,7 @@ function Carrito() {
       </header>
 
       {mensaje && <p className="alert alert-success" role="status">{mensaje}</p>}
+      {error && <p className="alert alert-danger" role="alert">{error}</p>}
 
       {carrito.length === 0 ? (
         <section className="text-center py-5">
@@ -58,6 +76,7 @@ function Carrito() {
                           className="form-control"
                           type="number"
                           min="1"
+                          max={stockDe(item.id)}
                           step="1"
                           value={item.cantidad}
                           onChange={(event) => cambiarCantidad(item.id, Number(event.target.value))}
@@ -94,14 +113,11 @@ function Carrito() {
                 <button
                   type="button"
                   className="btn btn-success w-100"
-                  onClick={() => {
-                    if (finalizarCompra()) {
-                      setMensaje('Compra registrada en tu historial. Este demo no procesa pagos.');
-                    }
-                  }}
+                  onClick={() => void comprar()}
+                  disabled={procesando}
                   aria-label="Finalizar compra"
                 >
-                  Finalizar compra
+                  {procesando ? 'Procesando...' : 'Finalizar compra'}
                 </button>
                 <p className="small text-muted mt-3 mb-0">
                   Compra de demostración: no se procesa ningún pago.

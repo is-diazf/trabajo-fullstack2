@@ -1,10 +1,21 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
 import { useSesion } from './SesionContexto';
-import { productosData, type Producto } from '../data/ProductosData';
+import {
+  listarComprasDeUsuario,
+  listarProductos,
+  mensajeErrorTienda,
+  registrarCompra,
+  type CompraRegistrada,
+  type Producto,
+} from '../servicios/tienda';
 
-export interface ProductoEnCarrito extends Producto {
+export type { Producto };
+
+export interface ProductoEnCarrito extends Omit<Producto, 'stock'> {
   cantidad: number;
 }
+
+export type ResultadoCompra = { correcto: true } | { correcto: false; mensaje: string };
 
 export interface Compra {
   id: string;
@@ -15,6 +26,9 @@ export interface Compra {
 
 interface CarritoContextType {
   productos: Producto[];
+  cargandoProductos: boolean;
+  errorProductos: string;
+  recargarProductos: () => Promise<void>;
   carrito: ProductoEnCarrito[];
   historial: Compra[];
   totalUnidades: number;
@@ -23,12 +37,16 @@ interface CarritoContextType {
   cambiarCantidad: (productoId: number, cantidad: number) => void;
   eliminarDelCarrito: (productoId: number) => void;
   vaciarCarrito: () => void;
-  finalizarCompra: () => boolean;
+  finalizarCompra: () => Promise<ResultadoCompra>;
 }
 
 const CLAVE_CARRITOS = 'carritos_vet';
-const CLAVE_HISTORIAL = 'historial_compras_vet';
 const CarritoContext = createContext<CarritoContextType | undefined>(undefined);
+
+function aItemDeCarrito(producto: Producto, cantidad: number): ProductoEnCarrito {
+  const { id, nombre, descripcion, categoria, precio, imagen } = producto;
+  return { id, nombre, descripcion, categoria, precio, imagen, cantidad };
+}
 
 function esRegistro(valor: unknown): valor is Record<string, unknown> {
   return typeof valor === 'object' && valor !== null && !Array.isArray(valor);
@@ -72,18 +90,25 @@ function esListaDeProductos(valor: unknown): valor is ProductoEnCarrito[] {
   return Array.isArray(valor) && valor.every(esProductoEnCarrito);
 }
 
-function esHistorial(valor: unknown): valor is Compra[] {
-  return (
-    Array.isArray(valor) &&
-    valor.every(
-      (compra) =>
-        esRegistro(compra) &&
-        typeof compra.id === 'string' &&
-        typeof compra.fecha === 'string' &&
-        typeof compra.total === 'number' &&
-        esListaDeProductos(compra.productos),
-    )
-  );
+// Las compras vienen de la tienda; categoría e imagen se completan con el catálogo actual.
+function aCompra(registrada: CompraRegistrada, productos: Producto[]): Compra {
+  return {
+    id: String(registrada.id),
+    fecha: registrada.creadaEn,
+    total: registrada.total,
+    productos: registrada.items.map((item) => {
+      const producto = productos.find((candidato) => candidato.id === item.productoId);
+      return {
+        id: item.productoId,
+        nombre: item.nombreProducto,
+        descripcion: producto?.descripcion ?? '',
+        categoria: producto?.categoria ?? 'General',
+        imagen: producto?.imagen ?? '',
+        precio: item.precioUnitario,
+        cantidad: item.cantidad,
+      };
+    }),
+  };
 }
 
 export function CarritoProvider({ children }: { children: ReactNode }) {
@@ -91,23 +116,80 @@ export function CarritoProvider({ children }: { children: ReactNode }) {
   const [carritos, setCarritos] = useState<Record<string, ProductoEnCarrito[]>>(
     () => leerMapa(CLAVE_CARRITOS, esListaDeProductos),
   );
-  const [historiales, setHistoriales] = useState<Record<string, Compra[]>>(
-    () => leerMapa(CLAVE_HISTORIAL, esHistorial),
-  );
+  // Compras registradas en la tienda, por id de usuario.
+  const [compras, setCompras] = useState<Record<string, CompraRegistrada[]>>({});
 
   useEffect(() => {
     localStorage.setItem(CLAVE_CARRITOS, JSON.stringify(carritos));
   }, [carritos]);
 
+  const usuarioId = usuario?.id;
   useEffect(() => {
-    localStorage.setItem(CLAVE_HISTORIAL, JSON.stringify(historiales));
-  }, [historiales]);
+    if (usuarioId === undefined) return;
+    let activo = true;
+    listarComprasDeUsuario(usuarioId)
+      .then((lista) => {
+        if (activo) setCompras((actuales) => ({ ...actuales, [usuarioId]: lista }));
+      })
+      .catch(() => {
+        // Sin conexión con la tienda el historial queda vacío; el carrito sigue funcionando.
+      });
+    return () => {
+      activo = false;
+    };
+  }, [usuarioId]);
 
-  const carrito = usuario ? carritos[usuario.id] ?? [] : [];
-  const historial = usuario ? historiales[usuario.id] ?? [] : [];
+  const [productos, setProductos] = useState<Producto[]>([]);
+  const [cargandoProductos, setCargandoProductos] = useState(true);
+  const [errorProductos, setErrorProductos] = useState('');
+
+  const recargarProductos = useCallback(async () => {
+    setCargandoProductos(true);
+    try {
+      setProductos(await listarProductos());
+      setErrorProductos('');
+    } catch (error) {
+      setErrorProductos(mensajeErrorTienda(error));
+    } finally {
+      setCargandoProductos(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    let activo = true;
+    listarProductos()
+      .then((lista) => {
+        if (!activo) return;
+        setProductos(lista);
+        setErrorProductos('');
+      })
+      .catch((error: unknown) => {
+        if (activo) setErrorProductos(mensajeErrorTienda(error));
+      })
+      .finally(() => {
+        if (activo) setCargandoProductos(false);
+      });
+    return () => {
+      activo = false;
+    };
+  }, []);
+
+  const buscarProducto = (productoId: number) => productos.find((producto) => producto.id === productoId);
+
+  // Los datos del catálogo (precio, nombre, imagen) mandan sobre lo guardado en el navegador.
+  const carrito = (usuario ? carritos[usuario.id] ?? [] : []).map((item) => {
+    const producto = buscarProducto(item.id);
+    return producto ? aItemDeCarrito(producto, item.cantidad) : item;
+  });
+  const historial = (usuario ? compras[usuario.id] ?? [] : []).map((compra) => aCompra(compra, productos));
+
+  const limitarAlStock = (productoId: number, cantidad: number) => {
+    const producto = buscarProducto(productoId);
+    return producto ? Math.min(cantidad, producto.stock) : cantidad;
+  };
 
   const agregarAlCarrito = (producto: Producto) => {
-    if (!usuario) return;
+    if (!usuario || producto.stock < 1) return;
     setCarritos((actuales) => {
       const carritoActual = actuales[usuario.id] ?? [];
       const existente = carritoActual.find((item) => item.id === producto.id);
@@ -115,19 +197,23 @@ export function CarritoProvider({ children }: { children: ReactNode }) {
         ...actuales,
         [usuario.id]: existente
           ? carritoActual.map((item) =>
-              item.id === producto.id ? { ...item, cantidad: item.cantidad + 1 } : item,
+              item.id === producto.id
+                ? { ...item, cantidad: Math.min(item.cantidad + 1, producto.stock) }
+                : item,
             )
-          : [...carritoActual, { ...producto, cantidad: 1 }],
+          : [...carritoActual, aItemDeCarrito(producto, 1)],
       };
     });
   };
 
   const cambiarCantidad = (productoId: number, cantidad: number) => {
     if (!usuario || !Number.isInteger(cantidad) || cantidad < 1) return;
+    const permitida = limitarAlStock(productoId, cantidad);
+    if (permitida < 1) return;
     setCarritos((actuales) => ({
       ...actuales,
       [usuario.id]: (actuales[usuario.id] ?? []).map((item) =>
-        item.id === productoId ? { ...item, cantidad } : item,
+        item.id === productoId ? { ...item, cantidad: permitida } : item,
       ),
     }));
   };
@@ -145,26 +231,34 @@ export function CarritoProvider({ children }: { children: ReactNode }) {
     setCarritos((actuales) => ({ ...actuales, [usuario.id]: [] }));
   };
 
-  const finalizarCompra = () => {
-    if (!usuario || carrito.length === 0) return false;
-    const compra: Compra = {
-      id: crypto.randomUUID(),
-      fecha: new Date().toISOString(),
-      productos: carrito.map((item) => ({ ...item })),
-      total: carrito.reduce((total, item) => total + item.precio * item.cantidad, 0),
-    };
-    setHistoriales((actuales) => ({
-      ...actuales,
-      [usuario.id]: [compra, ...(actuales[usuario.id] ?? [])],
-    }));
-    vaciarCarrito();
-    return true;
+  const finalizarCompra = async (): Promise<ResultadoCompra> => {
+    if (!usuario) return { correcto: false, mensaje: 'Inicia sesión para comprar.' };
+    if (carrito.length === 0) return { correcto: false, mensaje: 'Tu carrito está vacío.' };
+
+    try {
+      const registrada = await registrarCompra(
+        carrito.map((item) => ({ productoId: item.id, cantidad: item.cantidad })),
+      );
+      setCompras((actuales) => ({
+        ...actuales,
+        [usuario.id]: [registrada, ...(actuales[usuario.id] ?? [])],
+      }));
+      vaciarCarrito();
+      void recargarProductos();
+      return { correcto: true };
+    } catch (error) {
+      void recargarProductos();
+      return { correcto: false, mensaje: mensajeErrorTienda(error) };
+    }
   };
 
   return (
     <CarritoContext.Provider
       value={{
-        productos: productosData,
+        productos,
+        cargandoProductos,
+        errorProductos,
+        recargarProductos,
         carrito,
         historial,
         totalUnidades: carrito.reduce((total, item) => total + item.cantidad, 0),

@@ -1,14 +1,15 @@
 // src/paginas/AdminServicios.tsx
 import { useState } from "react";
-import { useServicios } from "../context/ServiciosContexto";
+import { useServicios, type Servicio } from "../context/ServiciosContexto";
 import { Link } from "react-router-dom";
-import type { Servicio } from "../data/ServiciosData";
 
 function AdminServicios() {
 
-    const { servicios, agregarServicio, editarServicio, eliminarServicio } = useServicios();
+    const { servicios, cargando, error: errorCarga, agregarServicio, editarServicio, eliminarServicio } = useServicios();
 
   const [editandoId, setEditandoId] = useState<number | null>(null);
+  const [guardando, setGuardando] = useState(false);
+  const [error, setError] = useState("");
   const [formData, setFormData] = useState({
     titulo: "",
     descripcion: "",
@@ -25,16 +26,26 @@ function AdminServicios() {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (editandoId === null) {
-      // CREAR
-      agregarServicio(formData);
+    setError("");
+    setGuardando(true);
+    // CREAR o EDITAR en Veterinaria-Service
+    const resultado = editandoId === null
+      ? await agregarServicio(formData)
+      : await editarServicio(editandoId, formData);
+    setGuardando(false);
+    if (resultado.correcto) {
+      limpiarFormulario();
     } else {
-      // EDITAR
-      editarServicio(editandoId, formData);
+      setError(resultado.mensaje);
     }
-    limpiarFormulario();
+  };
+
+  const handleEliminar = async (id: number) => {
+    setError("");
+    const resultado = await eliminarServicio(id);
+    if (!resultado.correcto) setError(resultado.mensaje);
   };
 
   // Cargar datos en el formulario para editar
@@ -59,10 +70,16 @@ function AdminServicios() {
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h1 className="fw-bold text-success mb-0">Panel de Administración: Servicios</h1>
         <div className="d-flex gap-2">
+          <Link to="/admin" className="btn btn-outline-success">Panel general</Link>
           <Link to="/admin/usuarios" className="btn btn-outline-success">Administrar usuarios</Link>
+          <Link to="/admin/novedades" className="btn btn-outline-success">Administrar novedades</Link>
           <Link to="/servicios" className="btn btn-outline-secondary">Ir a la vista pública</Link>
         </div>
       </div>
+
+      {(error || errorCarga) && (
+        <p className="alert alert-danger" role="alert">{error || errorCarga}</p>
+      )}
 
       <div className="row g-4">
         <div className="col-12 col-md-4">
@@ -74,24 +91,24 @@ function AdminServicios() {
               
               <form onSubmit={handleSubmit}>
                 <div className="mb-3">
-                  <label className="form-label fw-bold">Título</label>
-                  <input type="text" className="form-control" name="titulo" value={formData.titulo} onChange={handleChange} required />
+                  <label className="form-label fw-bold" htmlFor="servicio-titulo">Título</label>
+                  <input id="servicio-titulo" type="text" className="form-control" name="titulo" value={formData.titulo} onChange={handleChange} required />
                 </div>
                 <div className="mb-3">
-                  <label className="form-label fw-bold">Descripción</label>
-                  <textarea className="form-control" name="descripcion" rows={3} value={formData.descripcion} onChange={handleChange} required></textarea>
+                  <label className="form-label fw-bold" htmlFor="servicio-descripcion">Descripción</label>
+                  <textarea id="servicio-descripcion" className="form-control" name="descripcion" rows={3} value={formData.descripcion} onChange={handleChange} required></textarea>
                 </div>
                 <div className="mb-3">
-                  <label className="form-label fw-bold">Precio ($)</label>
-                  <input type="number" min="0" className="form-control" name="precio" value={formData.precio} onChange={handleChange} required />
+                  <label className="form-label fw-bold" htmlFor="servicio-precio">Precio ($)</label>
+                  <input id="servicio-precio" type="number" min="0" className="form-control" name="precio" value={formData.precio} onChange={handleChange} required />
                 </div>
                 <div className="mb-3">
-                  <label className="form-label fw-bold">URL de la Imagen</label>
-                  <input type="text" className="form-control" name="imagen" value={formData.imagen} onChange={handleChange} required />
+                  <label className="form-label fw-bold" htmlFor="servicio-imagen">URL de la Imagen</label>
+                  <input id="servicio-imagen" type="text" className="form-control" name="imagen" value={formData.imagen} onChange={handleChange} required />
                 </div>
                 
-                <button type="submit" className="btn btn-success w-100 fw-bold">
-                  {editandoId === null ? "Guardar Servicio" : "Actualizar Servicio"}
+                <button type="submit" className="btn btn-success w-100 fw-bold" disabled={guardando}>
+                  {guardando ? "Guardando..." : editandoId === null ? "Guardar Servicio" : "Actualizar Servicio"}
                 </button>
                 
                 {editandoId !== null && (
@@ -119,6 +136,9 @@ function AdminServicios() {
                     </tr>
                   </thead>
                   <tbody>
+                    {cargando && servicios.length === 0 && (
+                      <tr><td colSpan={4} className="text-center text-muted">Cargando servicios...</td></tr>
+                    )}
                     {servicios.map((servicio) => (
                       <tr key={servicio.id}>
                         <td>{servicio.id.toString().slice(-4)}</td> {/* Mostramos los últimos 4 dígitos del ID */}
@@ -128,7 +148,7 @@ function AdminServicios() {
                           <button className="btn btn-sm btn-outline-primary me-2" onClick={() => handleEditarClick(servicio)}>
                             Editar
                           </button>
-                          <button className="btn btn-sm btn-outline-danger" onClick={() => eliminarServicio(servicio.id)}>
+                          <button className="btn btn-sm btn-outline-danger" onClick={() => void handleEliminar(servicio.id)}>
                             Eliminar
                           </button>
                         </td>

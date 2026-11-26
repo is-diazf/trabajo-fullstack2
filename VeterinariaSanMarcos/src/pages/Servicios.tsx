@@ -4,7 +4,7 @@ import CardServicio from "../componentes/molecules/CardServicio";
 import { useServicios } from "../context/ServiciosContexto"; // Ojo aquí: Contexto con O
 
 function Servicios() {
-  const { servicios } = useServicios(); 
+  const { servicios, cargando, error } = useServicios();
   const [busqueda, setBusqueda] = useState("");
 
   const serviciosFiltrados = servicios.filter((servicio) => {
@@ -45,8 +45,16 @@ function Servicios() {
             </div>
           ))
         ) : (
-          <div className="text-center text-muted mt-5">
-            <h4>No se encontraron servicios con "{busqueda}"</h4>
+          <div className="text-center text-muted mt-5" role={cargando ? "status" : undefined}>
+            <h4>
+              {cargando
+                ? "Cargando servicios..."
+                : error
+                  ? error
+                  : busqueda.trim()
+                    ? `No se encontraron servicios con "${busqueda}"`
+                    : "Aún no hay servicios publicados."}
+            </h4>
           </div>
         )}
       </div>

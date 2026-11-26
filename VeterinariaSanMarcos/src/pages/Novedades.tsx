@@ -2,11 +2,16 @@ import { Link } from "react-router-dom";
 import { useNovedades } from "../context/NovedadesContexto";
 
 function Novedades() {
-  const { novedades } = useNovedades();
+  const { novedades, cargando, error } = useNovedades();
 
   return (
     <div className="container py-5">
       <h1 className="mb-4 fw-bold text-success text-center">Novedades</h1>
+      {novedades.length === 0 && (
+        <p className="text-center text-muted" role={cargando ? "status" : undefined}>
+          {cargando ? "Cargando novedades..." : error || "Aún no hay novedades publicadas."}
+        </p>
+      )}
       <div className="row justify-content-center g-4">
         {novedades.map((novedad) => (
           <div className="col-12 col-md-6 col-lg-5" key={novedad.id}>

@@ -1,65 +1,103 @@
 // src/context/ServiciosContexto.tsx
-import { createContext, useState, useEffect, useContext, type ReactNode } from 'react';
-import { serviciosData as datosIniciales } from '../data/ServiciosData';
+import { createContext, useState, useEffect, useContext, useCallback, type ReactNode } from 'react';
+import {
+  actualizarServicio,
+  borrarServicio,
+  crearServicio,
+  listarServicios,
+  mensajeErrorVeterinaria,
+  type DatosServicio,
+  type Servicio,
+} from '../servicios/veterinaria';
 
-interface Servicio {
-  id: number;
-  titulo: string;
-  descripcion: string;
-  precio: number;
-  imagen: string;
-}
+export type { Servicio };
+
+export type Resultado = { correcto: true } | { correcto: false; mensaje: string };
 
 interface ServiciosContextType {
   servicios: Servicio[];
-  agregarServicio: (servicio: Omit<Servicio, 'id'>) => void;
-  editarServicio: (id: number, servicioActualizado: Omit<Servicio, 'id'>) => void;
-  eliminarServicio: (id: number) => void;
+  cargando: boolean;
+  error: string;
+  recargar: () => void;
+  agregarServicio: (servicio: DatosServicio) => Promise<Resultado>;
+  editarServicio: (id: number, servicioActualizado: DatosServicio) => Promise<Resultado>;
+  eliminarServicio: (id: number) => Promise<Resultado>;
 }
 
 const ServiciosContext = createContext<ServiciosContextType | undefined>(undefined);
 
 export function ServiciosProvider({ children }: { children: ReactNode }) {
-  const [servicios, setServicios] = useState<Servicio[]>(() => {
-    const guardados = localStorage.getItem('servicios_vet');
-    const datosParseados = guardados ? JSON.parse(guardados) : [];
-    
-    if (datosParseados.length > 0) {
-      return datosParseados;
-    }
-    return datosIniciales;
-  });
+  // Los servicios viven en Veterinaria-Service; aquí solo se guarda la última lista recibida.
+  const [servicios, setServicios] = useState<Servicio[]>([]);
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState('');
+  const [version, setVersion] = useState(0);
 
-  // 2. Efecto: cada vez que el arreglo cambie, lo guardamos en localStorage
   useEffect(() => {
-    localStorage.setItem('servicios_vet', JSON.stringify(servicios));
-  }, [servicios]);
+    let activo = true;
+    listarServicios()
+      .then((lista) => {
+        if (!activo) return;
+        setServicios(lista);
+        setError('');
+      })
+      .catch((causa: unknown) => {
+        if (activo) setError(mensajeErrorVeterinaria(causa));
+      })
+      .finally(() => {
+        if (activo) setCargando(false);
+      });
+    return () => {
+      activo = false;
+    };
+  }, [version]);
 
-  // 3. Funciones CRUD
-  const agregarServicio = (nuevoServicio: Omit<Servicio, 'id'>) => {
-    const nuevoId = Date.now(); 
-    setServicios([...servicios, { ...nuevoServicio, id: nuevoId }]);
+  const recargar = useCallback(() => {
+    setCargando(true);
+    setVersion((v) => v + 1);
+  }, []);
+
+  const agregarServicio = async (nuevoServicio: DatosServicio): Promise<Resultado> => {
+    try {
+      const creado = await crearServicio(nuevoServicio);
+      setServicios((actuales) => [...actuales, creado]);
+      return { correcto: true };
+    } catch (causa) {
+      return { correcto: false, mensaje: mensajeErrorVeterinaria(causa) };
+    }
   };
 
-  const editarServicio = (id: number, servicioActualizado: Omit<Servicio, 'id'>) => {
-    setServicios(servicios.map((s) => 
-      s.id === id ? { ...servicioActualizado, id } : s
-    ));
+  const editarServicio = async (id: number, servicioActualizado: DatosServicio): Promise<Resultado> => {
+    try {
+      const actualizado = await actualizarServicio(id, servicioActualizado);
+      setServicios((actuales) => actuales.map((s) => (s.id === id ? actualizado : s)));
+      return { correcto: true };
+    } catch (causa) {
+      return { correcto: false, mensaje: mensajeErrorVeterinaria(causa) };
+    }
   };
 
-  const eliminarServicio = (id: number) => {
-    if (window.confirm('¿Estás seguro de eliminar este servicio?')) {
-      setServicios(servicios.filter((s) => s.id !== id));
+  const eliminarServicio = async (id: number): Promise<Resultado> => {
+    if (!window.confirm('¿Estás seguro de eliminar este servicio?')) return { correcto: true };
+    try {
+      await borrarServicio(id);
+      setServicios((actuales) => actuales.filter((s) => s.id !== id));
+      return { correcto: true };
+    } catch (causa) {
+      return { correcto: false, mensaje: mensajeErrorVeterinaria(causa) };
     }
   };
 
   return (
-    <ServiciosContext.Provider value={{ servicios, agregarServicio, editarServicio, eliminarServicio }}>
+    <ServiciosContext.Provider
+      value={{ servicios, cargando, error, recargar, agregarServicio, editarServicio, eliminarServicio }}
+    >
       {children}
     </ServiciosContext.Provider>
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useServicios() {
   const context = useContext(ServiciosContext);
   if (!context) throw new Error('useServicios debe usarse dentro de un ServiciosProvider');

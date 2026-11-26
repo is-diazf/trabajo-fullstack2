@@ -17,6 +17,10 @@ import AdminUsuarios from './pages/AdminUsuarios';
 import { useSesion } from './context/SesionContexto';
 import NovedadDetalle from './pages/NovedadDetalle';
 import AdminNovedades from './pages/AdminNovedades';
+import AdminPanel from './pages/AdminPanel';
+import Productos from './pages/Productos';
+import Carrito from './pages/Carrito';
+import { CarritoProvider } from './context/CarritoContexto';
 
 function RutaAdministrador({ children }: { children: ReactNode }) {
   const { usuario, esAdmin, cargando } = useSesion();
@@ -27,19 +31,21 @@ function RutaAdministrador({ children }: { children: ReactNode }) {
 }
 
 function App() {
-
   return (
-    <>
+    <CarritoProvider>
       <Navbar />
- 
+      
       <Routes>
-        
-
         <Route path="/" element={<Inicio />} />
+
+        <Route path="/admin" element={<RutaAdministrador><AdminPanel /></RutaAdministrador>} />
 
         <Route path="/novedades" element={<Novedades />} />
         <Route path="/novedades/:id" element={<NovedadDetalle />} />
         <Route path="/admin/novedades" element={<AdminNovedades />} />
+        
+        <Route path="/productos" element={<Productos />} />
+        <Route path="/carrito" element={<Carrito />} />
 
         <Route path="/servicios" element={<Servicios />} />
         <Route path="/servicios/:id" element={<ServicioDetalle />} />
@@ -47,20 +53,14 @@ function App() {
         <Route path="/admin/usuarios" element={<RutaAdministrador><AdminUsuarios /></RutaAdministrador>} />
         
         <Route path="/contacto" element={<Contacto />} />
-
-        <Route path="/info"
-         element={<Info />} />
-
-        <Route path="/login"
-         element={<Login />} />
-
+        <Route path="/info" element={<Info />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/registro" element={<Registro />} />
         <Route path="/usuario" element={<Usuario />} />
-
       </Routes>
       
       <Footer />
-    </>
+    </CarritoProvider>
   );
 };
 
